@@ -1,0 +1,10 @@
+name: "my-website"
+navbar:
+  title: "Dusty Gannon"
+  left:
+    - text: "Home"
+      href: index.html
+    - text: "Research"
+      href: 1-research.html
+    - text: "Contact me"
+      href: 3-contact.html
