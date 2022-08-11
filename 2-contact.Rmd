@@ -3,7 +3,7 @@ title: "Contact Me"
 output: html_document
 ---
 
-<img style="float: right;width: 300px; height: auto" src="images/bc_skiing_3FJ.jpeg" alt="XC skiing in the Willamette National Forest">
+<img style="float: right;width: 300px; height: auto" src="images/bc_skiing_3FJ.jpg" alt="BC skiing on Three-Fingered Jack, Oregon, USA">
 
 <font size="5"> email: dgannon(at)uwyo.edu
 
