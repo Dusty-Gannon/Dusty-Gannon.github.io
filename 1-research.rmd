@@ -11,7 +11,7 @@ $~$
 
 ### Combining sparse regression techniques with time-series models
 
-<font size="3"> Long-term ecological data is invaluable for elucidating ecological dynamics through time, especially as our climate and landscapes change. Statistical methods for extracting key information from such data are not commonplace in ecology. My collaborators in the [EPSCoR Modelscapes consortium](https://microcollaborative.atlassian.net/wiki/spaces/MP/overview) and I are working on developing non-Gaussian, dynamic (i.e., time-series) models that incorporate sparse regression techniques capable of identifying relationships between a response variable and key explanatory variables out of a large set of candidate variables. We expect these models may be useful for identifying key biological interactions in diverse communities from observational cover, density, or count data, among many other potential uses.
+<font size="3"> Long-term ecological data is invaluable for elucidating ecological dynamics through time, especially as our climate and landscapes change. However, statistical methods for extracting key information from such data are not commonplace in ecology. My collaborators in the [EPSCoR Modelscapes consortium](https://microcollaborative.atlassian.net/wiki/spaces/MP/overview) and I are working on developing non-Gaussian, dynamic (i.e., time-series) models that incorporate sparse regression techniques capable of identifying relationships between a response variable and key explanatory variables out of a large set of candidate variables. We expect these models may be useful for identifying key biological interactions in diverse communities from observational cover, density, or count data, among many other potential uses.
 
 $~$
 
