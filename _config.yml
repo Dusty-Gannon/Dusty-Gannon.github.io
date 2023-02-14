@@ -29,8 +29,8 @@ title_separator          : "-"
 subtitle                 : # site tagline that appears below site title in masthead
 name                     : "Dusty Gannon"
 description              : "Website and blog for Dusty Gannon, statistical consultant and ecologist."
-url                      : Dusty-Gannon.github.io
-baseurl                  : /Dusty-Gannon.github.io
+url                      : "https://dusty-gannon.github.io/"
+baseurl                  : ""
 repository               : "Dusty-Gannon/Dusty-Gannon.github.io"
 teaser                   : # path of fallback teaser image, e.g. "/assets/images/teaser.png"
 logo                     : "/assets/images/bird_pic.png"
