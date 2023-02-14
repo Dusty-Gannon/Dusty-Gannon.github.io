@@ -1,16 +1,15 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.1">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2023-02-14T13:55:12-07:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Dusty Gannon</title><subtitle>Website and blog for Dusty Gannon, statistical consultant and ecologist.</subtitle><author><name>Dusty Gannon</name></author><entry><title type="html">Welcome to Jekyll!</title><link href="http://localhost:4000/jekyll/update/welcome-to-jekyll/" rel="alternate" type="text/html" title="Welcome to Jekyll!" /><published>2023-01-04T14:26:05-07:00</published><updated>2023-01-04T14:26:05-07:00</updated><id>http://localhost:4000/jekyll/update/welcome-to-jekyll</id><content type="html" xml:base="http://localhost:4000/jekyll/update/welcome-to-jekyll/"><![CDATA[<h1 id="code-testing">code testing</h1>
-<figure class="highlight">
-<pre><code class="language-r" data-lang="r"><span class="w">  </span><span class="n">print</span><span class="p">(</span><span class="s2">"testing"</span><span class="p">)</span><span class="w">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.3">Jekyll</generator><link href="http://localhost:4000/Dusty-Gannon.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/Dusty-Gannon.github.io/" rel="alternate" type="text/html" /><updated>2023-02-14T15:22:05-07:00</updated><id>http://localhost:4000/Dusty-Gannon.github.io/feed.xml</id><title type="html">Dusty Gannon</title><subtitle>Website and blog for Dusty Gannon, statistical consultant and ecologist.</subtitle><author><name>Dusty Gannon</name></author><entry><title type="html">Welcome to Jekyll!</title><link href="http://localhost:4000/Dusty-Gannon.github.io/jekyll/update/welcome-to-jekyll/" rel="alternate" type="text/html" title="Welcome to Jekyll!" /><published>2023-01-04T14:26:05-07:00</published><updated>2023-01-04T14:26:05-07:00</updated><id>http://localhost:4000/Dusty-Gannon.github.io/jekyll/update/welcome-to-jekyll</id><content type="html" xml:base="http://localhost:4000/Dusty-Gannon.github.io/jekyll/update/welcome-to-jekyll/">&lt;h1 id=&quot;code-testing&quot;&gt;code testing&lt;/h1&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-r&quot; data-lang=&quot;r&quot;&gt;&lt;span class=&quot;w&quot;&gt;  &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;testing&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
   
-  </span><span class="c1"># comments</span><span class="w">
-  </span><span class="n">var</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">runif</span><span class="p">(</span><span class="m">1</span><span class="p">)</span><span class="w">
-  </span><span class="n">pnorm</span><span class="p">(</span><span class="n">var</span><span class="p">)</span><span class="w">
-  </span><span class="n">var</span><span class="w"> </span><span class="o">%*%</span><span class="w"> </span><span class="n">B</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">vec</span><span class="p">(</span><span class="m">2</span><span class="p">)</span></code></pre>
-</figure>
-<h1 id="math-testing">math testing</h1>
-<p><span class="math display">\[
-\begin{aligned}
-Y_t &amp;\sim \mathcal{N}(\mu,\ \sigma^2)\\
+  &lt;/span&gt;&lt;span class=&quot;c1&quot;&gt;# comments&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;runif&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pnorm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;%*%&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vec&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;h1 id=&quot;math-testing&quot;&gt;math testing&lt;/h1&gt;
+
+\[\begin{aligned}
+Y_t &amp;amp;\sim \mathcal{N}(\mu,\ \sigma^2)\\
 \mathbb{E}(Y_t) = {\boldsymbol \beta}
-\end{aligned}
-\]</span></p>]]></content><author><name>Dusty Gannon</name></author><category term="jekyll" /><category term="update" /><summary type="html"><![CDATA[code testing]]></summary></entry></feed>
+\end{aligned}\]</content><author><name>Dusty Gannon</name></author><category term="jekyll" /><category term="update" /><summary type="html">code testing</summary></entry></feed>
