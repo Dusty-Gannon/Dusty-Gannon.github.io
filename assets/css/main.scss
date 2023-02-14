@@ -1,0 +1,27 @@
+---
+search: false
+---
+
+$link-color: #023047;
+
+$base00: #F3EFEF;
+$base01: #232a25;
+$base02: #526057;
+$base03: #5f6d64;
+$base04: #D34426;
+$base05: #3037A2;
+$base06: #dfe7e2;
+$base07: #ecf4ee;
+$base08: #b16139;
+$base09: #9f713c;
+$base0a: #a07e3b;
+$base0b: #489963;
+$base0c: #1c9aa0;
+$base0d: #478c90;
+$base0e: #55859b;
+$base0f: #867469;
+
+@charset "utf-8";
+
+@import "minimal-mistakes/skins/{{ site.minimal_mistakes_skin | default: 'default' }}"; // skin
+@import "minimal-mistakes"; // main partials

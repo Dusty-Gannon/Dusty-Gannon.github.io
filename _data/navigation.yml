@@ -1,0 +1,7 @@
+main:
+  - title: "Contact"
+    url: /_pages/contact
+  - title: "CV"
+    url: /_pages/cv
+  - title: "Blog"
+    url: /_pages/blog
