@@ -21,7 +21,7 @@ var store = [{
     "excerpt":"Education Sep 2016 - Mar 2022 : PhD in Ecology, Oregon State University Sep 2020 - Mar 2022 : MS in Statistics, Oregon State University Sep 2011 - May 2015 : BS in Ecosystem Science and Sustainability, Colorado State University Research Interests Statistical ecology, Bayesian statistics, theoretical ecology, time series...","url": "http://localhost:4000/_pages/cv"
   },{
     "title": null,
-    "excerpt":"I am an ecologist and statistician interested in fitting theoretical models of populations and ecological communities to data.  ","url": "http://localhost:4000/"
+    "excerpt":"I am an ecologist and statistician interested in fitting theoretical models of populations and ecological communities to data.      Please excuse any lack of content or bugs in the website as I am in the process of revamping!  ","url": "http://localhost:4000/"
   },{
     "title": null,
     "excerpt":"var idx = lunr(function () { this.field('title') this.field('excerpt') this.field('categories') this.field('tags') this.ref('id') this.pipeline.remove(lunr.trimmer) for (var item in store) { this.add({ title: store[item].title, excerpt: store[item].excerpt, categories: store[item].categories, tags: store[item].tags, id: item }) } }); $(document).ready(function() { $('input#search').on('keyup', function () { var resultdiv = $('#results'); var query = $(this).val().toLowerCase(); var result = idx.query(function...","url": "http://localhost:4000/assets/js/lunr/lunr-en.js"
