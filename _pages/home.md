@@ -1,6 +1,10 @@
 ---
 permalink: /
 author_profile: true
+exerpt: "Welcome!"
+header:
+  overlay_image: "/assets/images/sacramento.jpg"
+  overlay_filter: 0.5
 ---
 
 I am an ecologist and statistician interested in fitting theoretical models of populations and ecological communities to data.
