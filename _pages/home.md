@@ -3,7 +3,7 @@ permalink: /
 author_profile: true
 exerpt: "Welcome!"
 header:
-  overlay_image: "/assets/images/sacramento.jpg"
+  overlay_image: "/assets/images/lake_agnes_ski.jpg"
   overlay_filter: 0.5
 ---
 
