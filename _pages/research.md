@@ -18,10 +18,12 @@ Long-term data collection on ecological systems can help to illuminate how a sys
   
 ## Comparisons of sparse learning techniques
   
-The development of sparse learning methods, or machine learning techniques that perform regression and model selection simultaneously, have exploded in recent years. Early versions of sparse regression include the **L**east **A**bsolute **S**hrinkage and **S**election **O**perator (LASSO; [Tibshirani, 1996](https://www.jstor.org/stable/2346178)) and the similar (but not strictly sparse) Ridge regression, which both minimize the classic loss function, the sum of squares, between model and data, but subject to constraints on the parameters. Specifically, the LASSO minimizes the loss function defined by
+The development of sparse learning methods, or machine learning techniques that perform regression and model selection simultaneously, has exploded in recent years. Early versions of sparse regression include the **L**east **A**bsolute **S**hrinkage and **S**election **O**perator (LASSO; [Tibshirani, 1996](https://www.jstor.org/stable/2346178)) and the similar (but not strictly sparse) Ridge regression, which both minimize the classic sum-of-squares loss function, but subject to constraints on the parameters. Specifically, the LASSO minimizes the loss function defined by
+
 $$
 L(\boldsymbol \beta) = ({\bf y} - {\bf X} \boldsymbol \beta)^\top ({\bf y} - {\bf X}\boldsymbol \beta) + \lambda ||\boldsymbol \beta||_1
 $$
+
 where $${\bf y}$$ is the $$n$$-vector of responses, $${\bf X}$$ is the $$n \times P$$ model matrix, $$\boldsymbol \beta$$ is the $$P$$-vector of regression coefficients, $$||{\bf v}||_1$$ is the $$L_1$$ norm of the vector $${\bf v}$$, and $$\lambda$$ is the penalty parameter. The $$L_1$$ norm is equivalent to the sum of the magnitudes of all the elements in $$\boldsymbol \beta$$, penalizing the loss function for increases in the magnitudes of the regression coefficients. I like to think of this as *regression on a budget*. If there are strong signals in the data, estimating those large parameters uses up much of the budget, forcing the remaining parameter estimates to shrink towards zero$$^*$$. 
 
 Following these early developments and the recognition that the LASSO estimator is equivalent to the posterior mode estimate in a Bayesian regression in which the regression parameters are given independent Laplace priors (see [Park and Casella, 2008](https://doi.org/10.1198/016214508000000337)), Bayesian sparse learning approaches have burgeoned in recent years. As a part of the [Modelscape Consortium](https://microcollaborative.atlassian.net/wiki/spaces/MP/overview), an interdisciplinary and inter-institutional working group, my colleagues and I are comparing readily available software for different sparse modeling approaches. Specifically, we are interested in comparing:
@@ -31,3 +33,25 @@ Following these early developments and the recognition that the LASSO estimator 
   - Degree of parameter shrinkage
 
 <small>$$^*$$To see how the geometry of the LASSO penalty can force strictly sparse parameter vectors (those in which some parameters are estimated at *exactly* zero), check out my [shiny app for this topic](https://dusty-gannon.shinyapps.io/Geometry-of-LASSO-and-Ridge-regression/).</small>
+
+## Missing data in data-driven time series models
+
+The COVID-19 pandemic interrupted daily activities across the globe, including data collection (oh no!). In data-driven time series models, such as classical autoregressive models, missing data may be problematic because observations are both response and predictor. For example, assume observation $$Y_t$$ is missing (denoting the missing data with capital letters and observed with lower-case) in a dataset to which we want to fit an AR(1) model. Ignoring the missing observation is problematic because we may violate the assumption of equal spacing between time points. Specifically, we wouldn't want to fit the model $$y_{t+1} = \mu + \phi y_{t - 1} + \epsilon_{t + 1}$$ when really our model is $$y_{t + 1} = \mu + \phi Y_{t} + \epsilon_{t + 1}$$. Deleting all observations that involve the missing $$Y_t$$ is also problematic because we have to delete more than just time point $$t$$ as a response, but also $$t + 1$$ since we have no predictor for $$t + 1$$. With more than just one missing observation or an AR order of greater than 1, this widdles down a dataset rapidly.
+
+Along with others in the [Modelscape Consortium](https://microcollaborative.atlassian.net/wiki/spaces/MP/overview), I am exploring options for appropriately handling missing data in data-driven time series modeling for both Gaussian time series as well as time series of count data. We are comparing model fits to simulated data with different mechanisms for missingness (missing completely at random [MCAR], autocorrelated missingness that results in contiguous stretches of missing data, and missing not at random [MNAR] when extreme values are more likely to be missing) when using imputation techniques as well as model-based approaches such as Bayesian data augmentation and expectation maximization. 
+
+<figure>
+  <img src="/assets/images/figures/research/missing_eff_on_marginals.png">
+  <figcaption> <small> Marginal distribution of the data with different missingness mechanisms. The theoretical marginal is shown in blue. Completely random missingness maintains the same marginal data distribution, allowing unbiased parameter recovery, while non-random missingness can bias the data distribution.</small> </figcaption>
+</figure>
+
+
+
+
+
+
+
+
+
+
+
