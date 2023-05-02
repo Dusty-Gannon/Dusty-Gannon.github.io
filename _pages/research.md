@@ -3,6 +3,7 @@ permalink: /_pages/research
 layout: single
 classes: wide
 toc: true
+usemathjax: true
 ---
 
 ## Bayesian learning methods for time series modeling
