@@ -15,7 +15,7 @@ var store = [{
     "excerpt":"Latest Posts  ","url": "http://localhost:4000/_pages/blog/"
   },{
     "title": null,
-    "excerpt":"Feel free to email me anytime at dustin.gannon@oregonstate.edu. I will get back to you as soon as possible, but note that, on the weekend, you are just as likely to get through to me by sending up smoke signals in the MacDonald-Dunn forest as you are over email.     ","url": "http://localhost:4000/_pages/contact"
+    "excerpt":"Feel free to email me anytime at dustin.gannon@oregonstate.edu. I will get back to you as soon as possible, but note that, on the weekend, you are just as likely to get through to me by sending up smoke signals in the MacDonald-Dunn forest as you are over email.      ","url": "http://localhost:4000/_pages/contact"
   },{
     "title": "Education",
     "excerpt":"Education Sep 2016 - Mar 2022 : PhD in Ecology, Oregon State University Sep 2020 - Mar 2022 : MS in Statistics, Oregon State University Sep 2011 - May 2015 : BS in Ecosystem Science and Sustainability, Colorado State University Research Interests Statistical ecology, Bayesian statistics, theoretical ecology, time series...","url": "http://localhost:4000/_pages/cv"
