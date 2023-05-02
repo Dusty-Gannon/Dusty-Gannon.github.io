@@ -9,7 +9,7 @@
   <head>
     <meta charset="utf-8">
 
-<!-- begin _includes/seo.html --><title>Dusty Gannon</title>
+<!-- begin _includes/seo.html --><title>Bayesian learning methods for time series modeling - Dusty Gannon</title>
 <meta name="description" content="Website and blog for Dusty Gannon, statistical consultant and ecologist.">
 
 
@@ -20,8 +20,8 @@
 <meta property="og:type" content="website">
 <meta property="og:locale" content="en_US">
 <meta property="og:site_name" content="Dusty Gannon">
-<meta property="og:title" content="Dusty Gannon">
-<meta property="og:url" content="http://localhost:4000/_pages/contact">
+<meta property="og:title" content="Bayesian learning methods for time series modeling">
+<meta property="og:url" content="http://localhost:4000/_pages/research">
 
 
   <meta property="og:description" content="Website and blog for Dusty Gannon, statistical consultant and ecologist.">
@@ -41,7 +41,7 @@
   
 
 
-<link rel="canonical" href="http://localhost:4000/_pages/contact">
+<link rel="canonical" href="http://localhost:4000/_pages/research">
 
 
 
@@ -111,7 +111,7 @@ window.MathJax = {
 
   </head>
 
-  <body class="layout--single">
+  <body class="layout--single wide">
     <nav class="skip-links">
   <ul>
     <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
@@ -282,7 +282,7 @@ window.MathJax = {
 
 
   <article class="page h-entry" itemscope itemtype="https://schema.org/CreativeWork">
-    
+    <meta itemprop="headline" content="Bayesian learning methods for time series modeling">
     
     
     
@@ -290,7 +290,10 @@ window.MathJax = {
     <div class="page__inner-wrap">
       
         <header>
-          
+          <h1 id="page-title" class="page__title p-name" itemprop="headline">
+            <a href="http://localhost:4000/_pages/research" class="u-url" itemprop="url">Bayesian learning methods for time series modeling
+</a>
+          </h1>
           
 
 
@@ -299,9 +302,27 @@ window.MathJax = {
 
       <section class="page__content e-content" itemprop="text">
         
-        <p>Feel free to email me anytime at dustin.gannon@oregonstate.edu. I will get back to you as soon as possible, but note that, on the weekend, you are just as likely to get through to me by sending up smoke signals in the MacDonald-Dunn forest as you are over email.</p>
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu"><li><a href="#bayesian-learning-methods-for-time-series-modeling">Bayesian learning methods for time series modeling</a></li></ul>
 
-<p><img src="/assets/images/3FJ_ski.jpg" alt="" /></p>
+            </nav>
+          </aside>
+        
+        <h2 id="bayesian-learning-methods-for-time-series-modeling">Bayesian learning methods for time series modeling</h2>
+
+<p>Long-term data collection on ecological systems can help to illuminate how a system evolves through time with both internal mechanisms (e.g., competition between species or predation) and in response to external perturbations (e.g., anthropogenic disturbance). Long-term ecological (LTE) data is also critically important for projecting future states of a system with climate change, landscape conversion, and management efforts. While the recognition of the utility of LTE data is widespread, we are still in early stages of processing and analyzing the accumulating data, and modeling techniques continue to evolve. For this project, we are interested in exploring the utility of Bayesian regularization and unsupervised learning techniques in the analysis of LTE data with different goals in mind. These goals include:</p>
+
+<ol>
+  <li>
+    <p><strong>Feature selection</strong>: Time series analysis often begins with a series of steps to <em>detrend</em> and remove seasonal cycles in the data in order to construct a stationary time-series. This process inevitably introduces some subjectivity since the researcher must decide which long lags to subtract to remove seasonality and which short lags to keep to yield a stationary time series. However, seasonal time series can also be described using an AR($p$) model with $p \to \infty$ and a sparse vector of AR coefficients $\boldsymbol \phi$. Thus, given a sufficiently long time series, can we use Bayesian sparse learning techniques to fit the AR($p$) model and bypass the differencing steps? This can also be extended to include arbitrarily many explanatory variables in the model.
+  Feature selection may also be useful in a variety of ecological contexts. Using a community ecology example, there is mounting evidence to suggest that competitive communities can be effectively described with models that lie somewhere between a fully parameterized model with unique competition coefficients for each species and one in which all species share the same competitive effect, resulting in a single competition coefficient (e.g., <a href="https://doi.org/10.1111/2041-210X.14028">Skwara et al. 2023</a>). Can we use unsupervised Bayesian learning techniques to efficiently collapse some competitive effects into a common, shared competition coefficient, while allowing estimates of different competitive effects for species that compete more strongly (<a href="https://doi.org/10.1111/ele.13977">Weiss-Lehman et al. 2022</a>), and is there enough information in temporal fluctuations of species abundances to do so?</p>
+  </li>
+  <li>
+    <p><strong>Forecasting</strong>: Regularization / parameter ‘shrinkage’, or adding constraints to the model fitting procedure such that some regions of parameter space are penalized and some are favored, can help to protect against model overfitting, or fitting the model too closely to the observed data such that out-of-sample predictions are poor. Most Bayesian learning techniques include strongly informative prior distributions that favor parameter values close to zero. This can result in parameter shrinkage that may improve model forecasts of future states in time series, especially if the length of the observed time series is short and the data are noisy, making overfitting more likely.</p>
+  </li>
+</ol>
 
 
         

@@ -3,5 +3,7 @@ main:
     url: /_pages/contact
   - title: "CV"
     url: /_pages/cv
+  - title: "Research"
+    url: /_pages/research
   - title: "Blog"
     url: /_pages/blog
