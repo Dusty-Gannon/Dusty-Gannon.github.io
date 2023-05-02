@@ -9,7 +9,7 @@
   <head>
     <meta charset="utf-8">
 
-<!-- begin _includes/seo.html --><title>Bayesian learning methods for time series modeling - Dusty Gannon</title>
+<!-- begin _includes/seo.html --><title>Current Research - Dusty Gannon</title>
 <meta name="description" content="Website and blog for Dusty Gannon, statistical consultant and ecologist.">
 
 
@@ -20,7 +20,7 @@
 <meta property="og:type" content="website">
 <meta property="og:locale" content="en_US">
 <meta property="og:site_name" content="Dusty Gannon">
-<meta property="og:title" content="Bayesian learning methods for time series modeling">
+<meta property="og:title" content="Current Research">
 <meta property="og:url" content="http://localhost:4000/_pages/research">
 
 
@@ -289,7 +289,7 @@ window.MathJax = {
 
 
   <article class="page h-entry" itemscope itemtype="https://schema.org/CreativeWork">
-    <meta itemprop="headline" content="Bayesian learning methods for time series modeling">
+    <meta itemprop="headline" content="Current Research">
     
     
     
@@ -298,7 +298,7 @@ window.MathJax = {
       
         <header>
           <h1 id="page-title" class="page__title p-name" itemprop="headline">
-            <a href="http://localhost:4000/_pages/research" class="u-url" itemprop="url">Bayesian learning methods for time series modeling
+            <a href="http://localhost:4000/_pages/research" class="u-url" itemprop="url">Current Research
 </a>
           </h1>
           
@@ -312,7 +312,7 @@ window.MathJax = {
           <aside class="sidebar__right ">
             <nav class="toc">
               <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
-              <ul class="toc__menu"><li><a href="#bayesian-learning-methods-for-time-series-modeling">Bayesian learning methods for time series modeling</a></li></ul>
+              <ul class="toc__menu"><li><a href="#bayesian-learning-methods-for-time-series-modeling">Bayesian learning methods for time series modeling</a></li><li><a href="#comparisons-of-sparse-learning-techniques">Comparisons of sparse learning techniques</a></li></ul>
 
             </nav>
           </aside>
@@ -331,6 +331,21 @@ window.MathJax = {
   </li>
 </ol>
 
+<h2 id="comparisons-of-sparse-learning-techniques">Comparisons of sparse learning techniques</h2>
+
+<p>The development of sparse learning methods, or machine learning techniques that perform regression and model selection simultaneously, have exploded in recent years. Early versions of sparse regression include the <strong>L</strong>east <strong>A</strong>bsolute <strong>S</strong>hrinkage and <strong>S</strong>election <strong>O</strong>perator (LASSO; <a href="https://www.jstor.org/stable/2346178">Tibshirani, 1996</a>) and the similar (but not strictly sparse) Ridge regression, which both minimize the classic loss function, the sum of squares, between model and data, but subject to constraints on the parameters. Specifically, the LASSO minimizes the loss function defined by
+\(L(\boldsymbol \beta) = ({\bf y} - {\bf X} \boldsymbol \beta)^\top ({\bf y} - {\bf X}\boldsymbol \beta) + \lambda ||\boldsymbol \beta||_1\)
+where \({\bf y}\) is the \(n\)-vector of responses, \({\bf X}\) is the \(n \times P\) model matrix, \(\boldsymbol \beta\) is the \(P\)-vector of regression coefficients, \(||{\bf v}||_1\) is the \(L_1\) norm of the vector \({\bf v}\), and \(\lambda\) is the penalty parameter. The \(L_1\) norm is equivalent to the sum of the magnitudes of all the elements in \(\boldsymbol \beta\), penalizing the loss function for increases in the magnitudes of the regression coefficients. I like to think of this as <em>regression on a budget</em>. If there are strong signals in the data, estimating those large parameters uses up much of the budget, forcing the remaining parameter estimates to shrink towards zero\(^*\).</p>
+
+<p>Following these early developments and the recognition that the LASSO estimator is equivalent to the posterior mode estimate in a Bayesian regression in which the regression parameters are given independent Laplace priors (see <a href="https://doi.org/10.1198/016214508000000337">Park and Casella, 2008</a>), Bayesian sparse learning approaches have burgeoned in recent years. As a part of the <a href="https://microcollaborative.atlassian.net/wiki/spaces/MP/overview">Modelscape Consortium</a>, an interdisciplinary and inter-institutional working group, my colleagues and I are comparing readily available software for different sparse modeling approaches. Specifically, we are interested in comparing:</p>
+
+<ul>
+  <li>within- and out-of-sample predictive performance of the fitted models using software defaults</li>
+  <li>Model selection accuracy (i.e., which elements of \(\boldsymbol \beta\) are zero and which are not?).</li>
+  <li>Degree of parameter shrinkage</li>
+</ul>
+
+<p><small>\(^*\)To see how the geometry of the LASSO penalty can force strictly sparse parameter vectors (those in which some parameters are estimated at <em>exactly</em> zero), check out my <a href="https://dusty-gannon.shinyapps.io/Geometry-of-LASSO-and-Ridge-regression/">shiny app for this topic</a>.</small></p>
 
         
       </section>

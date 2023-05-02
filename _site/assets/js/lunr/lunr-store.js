@@ -23,7 +23,7 @@ var store = [{
     "title": null,
     "excerpt":"I am an ecologist and statistician interested in fitting theoretical models of populations and ecological communities to data. I currently work as a consulting statistician in the College of Forestry at Oregon State University. Please excuse any lack of content or bugs in the website as I am in the...","url": "http://localhost:4000/"
   },{
-    "title": "Bayesian learning methods for time series modeling",
+    "title": "Current Research",
     "excerpt":"Bayesian learning methods for time series modeling Long-term data collection on ecological systems can help to illuminate how a system evolves through time with both internal mechanisms (e.g., competition between species or predation) and in response to external perturbations (e.g., anthropogenic disturbance). Long-term ecological (LTE) data is also critically important...","url": "http://localhost:4000/_pages/research"
   },{
     "title": null,

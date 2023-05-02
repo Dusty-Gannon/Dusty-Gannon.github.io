@@ -1,4 +1,5 @@
 ---
+title: Current Research
 permalink: /_pages/research
 layout: single
 classes: wide
@@ -15,5 +16,18 @@ Long-term data collection on ecological systems can help to illuminate how a sys
   
   2. **Forecasting**: Regularization / parameter ‘shrinkage’, or adding constraints to the model fitting procedure such that some regions of parameter space are penalized and some are favored, can help to protect against model overfitting, or fitting the model too closely to the observed data such that out-of-sample predictions are poor. Most Bayesian learning techniques include strongly informative prior distributions that favor parameter values close to zero. This can result in parameter shrinkage that may improve model forecasts of future states in time series, especially if the length of the observed time series is short and the data are noisy, making overfitting more likely.
   
-
+## Comparisons of sparse learning techniques
   
+The development of sparse learning methods, or machine learning techniques that perform regression and model selection simultaneously, have exploded in recent years. Early versions of sparse regression include the **L**east **A**bsolute **S**hrinkage and **S**election **O**perator (LASSO; [Tibshirani, 1996](https://www.jstor.org/stable/2346178)) and the similar (but not strictly sparse) Ridge regression, which both minimize the classic loss function, the sum of squares, between model and data, but subject to constraints on the parameters. Specifically, the LASSO minimizes the loss function defined by
+$$
+L(\boldsymbol \beta) = ({\bf y} - {\bf X} \boldsymbol \beta)^\top ({\bf y} - {\bf X}\boldsymbol \beta) + \lambda ||\boldsymbol \beta||_1
+$$
+where $${\bf y}$$ is the $$n$$-vector of responses, $${\bf X}$$ is the $$n \times P$$ model matrix, $$\boldsymbol \beta$$ is the $$P$$-vector of regression coefficients, $$||{\bf v}||_1$$ is the $$L_1$$ norm of the vector $${\bf v}$$, and $$\lambda$$ is the penalty parameter. The $$L_1$$ norm is equivalent to the sum of the magnitudes of all the elements in $$\boldsymbol \beta$$, penalizing the loss function for increases in the magnitudes of the regression coefficients. I like to think of this as *regression on a budget*. If there are strong signals in the data, estimating those large parameters uses up much of the budget, forcing the remaining parameter estimates to shrink towards zero$$^*$$. 
+
+Following these early developments and the recognition that the LASSO estimator is equivalent to the posterior mode estimate in a Bayesian regression in which the regression parameters are given independent Laplace priors (see [Park and Casella, 2008](https://doi.org/10.1198/016214508000000337)), Bayesian sparse learning approaches have burgeoned in recent years. As a part of the [Modelscape Consortium](https://microcollaborative.atlassian.net/wiki/spaces/MP/overview), an interdisciplinary and inter-institutional working group, my colleagues and I are comparing readily available software for different sparse modeling approaches. Specifically, we are interested in comparing:
+
+  - within- and out-of-sample predictive performance of the fitted models using software defaults
+  - Model selection accuracy (i.e., which elements of $$\boldsymbol \beta$$ are zero and which are not?).
+  - Degree of parameter shrinkage
+
+<small>$$^*$$To see how the geometry of the LASSO penalty can force strictly sparse parameter vectors (those in which some parameters are estimated at *exactly* zero), check out my [shiny app for this topic](https://dusty-gannon.shinyapps.io/Geometry-of-LASSO-and-Ridge-regression/).</small>
