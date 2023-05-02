@@ -62,5 +62,19 @@ Botany and Plant Pathology, OSU
 ## Select publications
 
   - **Gannon, D. G.**, Hadley, A. S., Frey, S. J. K. Pairing automated mark-recapture and social network models to explore the effects of landscape configuration on hummingbird foraging patterns. *Biology Letters* **17** (2021).
+  
+## Languages
+
+**Spoken languages**
+
+  - English (*native language*)
+  - Spanish (*conversational*)
+  
+**Programming languages**
+
+  - R (*fluent*)
+  - STAN (*fluent*)
+  - Unix/Linux (*competent*)
+  - LaTeX (*competent*)
 
 
