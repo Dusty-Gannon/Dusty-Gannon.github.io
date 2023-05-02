@@ -1,6 +1,5 @@
 ---
 permalink: /
-layout: splash
 author_profile: true
 exerpt: "Welcome!"
 header:

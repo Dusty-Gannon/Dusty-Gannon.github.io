@@ -20,7 +20,9 @@ Statistical ecology, Bayesian statistics, theoretical ecology, time series analy
 
 ## Appointments
 
-<span style="color:grey;">Apr 2022 - Present</span> : Postdoctoral Research Associate<br>
+<span style="color:grey;">Apr 2023 - Present</span> : Consulting Statistician, College of Forestry, Oregon State University
+
+<span style="color:grey;">Apr 2022 - Apr 2023</span> : Postdoctoral Research Associate<br>
 NSF EPSCoR RII-Track 2: Highly predictive, explanatory models to harness the life science data revolution, [Modelscapes Consortium](https://microcollaborative.atlassian.net/wiki/spaces/MP/overview), University of Wyoming
 <br>*Advisor(s): Dr. Lauren Shoemaker*
 
@@ -42,9 +44,23 @@ Botany and Plant Pathology, OSU
 *Advisor(s): Drs. F. Andrew Jones and Matthew G. Betts, OSU*
 
 
+## Teaching
+
+ - **FES 524: Natural Resources Data Analysis**
+ 
+### Past teaching assisstantships
+
+  - **BOT 575: Comparative Genomics** - *Instructor: Aaron Liston, BPP, OSU*
+  
+  - **ST 591: Introduction to Quantitative Genomics** - *Instructor: Thomas Sharpton, MCB, OSU*
+  
+  - **ST 201: Principles of Statistics** - *Instructor(s): Kelsi Espinoza, Lisa Madsen, Erin Howard, ST, OSU*
+  
+  - **BOT 341: Plant Ecology** - *Instructor(s): Andy Jones, BPP, OSU*
 
 
+## Select publications
 
-
+  - **Gannon, D. G.**, Hadley, A. S., Frey, S. J. K. Pairing automated mark-recapture and social network models to explore the effects of landscape configuration on hummingbird foraging patterns. *Biology Letters* **17** (2021).
 
 
