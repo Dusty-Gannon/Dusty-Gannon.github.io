@@ -40,3 +40,6 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+# Works in progress
+/_posts/May-2023-identifiability.md

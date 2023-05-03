@@ -1,28 +1,34 @@
 ---
 layout: single
-title:  "Welcome to Jekyll!"
+classes: wide
+title:  "Identifying unidentifiability"
 date:   2023-01-04 14:26:05 -0700
-categories: jekyll update
+categories: Common issues
 usemathjax: true
+toc: true
 ---
 
+> *Leutenant Cauchy*: Sir, we have an unidentified parameter entering regression airspace.
 
-# code testing
+> *Admiral Gauss*: Can we reparameterize and obtain their identity?
 
-{% highlight r %}
-  print("testing")
-  
-  # comments
-  var <- runif(1)
-  pnorm(var)
-  var %*% B + vec(2)
-{% endhighlight %}
+> *Leutenant Cauchy*: Trying now, Sir. No success.
 
-# math testing
+> *Admiral Gauss*: Do we have any prior information?
 
-$$
-\begin{aligned}
-Y_t &\sim \mathcal{N}(\mu,\ \sigma^2)\\
-\mathbb{E}(Y_t) = {\boldsymbol \beta}
-\end{aligned}
-$$
+> *Leutenant Cauchy*: No, Sir.
+
+> *Admiral Gauss*: Shoot it down...
+
+
+## What is *identifiability*?
+
+**Formal definition**
+
+> A statistical model $$\mathcal{P} = \{P_\theta: \theta \in \Theta\}$$ is *identifiable* if the mapping of $$\theta \to P_\theta$$ is one-to-one and invertible. 
+
+
+
+
+
+

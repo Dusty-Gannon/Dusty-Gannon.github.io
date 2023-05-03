@@ -1,15 +1,18 @@
 var store = [{
-        "title": "Welcome to Jekyll!",
-        "excerpt":"code testing     print(\"testing\")      # comments   var &lt;- runif(1)   pnorm(var)   var %*% B + vec(2)  math testing   \\[\\begin{aligned} Y_t &amp;\\sim \\mathcal{N}(\\mu,\\ \\sigma^2)\\\\ \\mathbb{E}(Y_t) = {\\boldsymbol \\beta} \\end{aligned}\\] ","categories": ["jekyll","update"],
+        "title": "Identifying unidentifiability",
+        "excerpt":"Leutenant Cauchy: Sir, we have an unidentified parameter entering regression airspace. Admiral Gauss: Can we reparameterize and obtain their identity? Leutenant Cauchy: Trying now, Sir. No success. Admiral Gauss: Do we have any prior information? Leutenant Cauchy: No, Sir. Admiral Gauss: Shoot it down… What is identifiability? Formal definition A...","categories": ["Common","issues"],
         "tags": [],
-        "url": "/jekyll/update/welcome-to-jekyll/",
+        "url": "/common/issues/welcome-to-jekyll/",
         "teaser": null
       },{
-    "title": "Welcome to Jekyll!",
-    "excerpt":"code testing     print(\"testing\")      # comments   var &lt;- runif(1)   pnorm(var)   var %*% B + vec(2)  math testing   \\[\\begin{aligned} Y_t &amp;\\sim \\mathcal{N}(\\mu,\\ \\sigma^2)\\\\ \\mathbb{E}(Y_t) = {\\boldsymbol \\beta} \\end{aligned}\\] ","url": "http://localhost:4000/_posts/2023-01-04-welcome-to-jekyll/"
+    "title": "Identifying unidentifiability",
+    "excerpt":"Leutenant Cauchy: Sir, we have an unidentified parameter entering regression airspace. Admiral Gauss: Can we reparameterize and obtain their identity? Leutenant Cauchy: Trying now, Sir. No success. Admiral Gauss: Do we have any prior information? Leutenant Cauchy: No, Sir. Admiral Gauss: Shoot it down… What is identifiability? Formal definition A...","url": "http://localhost:4000/_posts/2023-01-04-welcome-to-jekyll/"
   },{
     "title": null,
     "excerpt":"     404     Page not found :(    The requested page could not be found.   ","url": "http://localhost:4000/404.html"
+  },{
+    "title": "Identifying unidentifiability",
+    "excerpt":"Leutenant Cauchy: Sir, we have an unidentified parameter entering regression airspace. Admiral Gauss: Can we reparameterize and obtain their identity? Leutenant Cauchy: Trying now, Sir. No success. Admiral Gauss: Do we have any prior information? Leutenant Cauchy: No, Sir. Admiral Gauss: Shoot it down… What is identifiability? Formal definition A...","url": "http://localhost:4000/_posts/May-2023-identifiability/"
   },{
     "title": null,
     "excerpt":"Latest Posts  ","url": "http://localhost:4000/_pages/blog/"
