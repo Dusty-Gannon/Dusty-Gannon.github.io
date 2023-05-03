@@ -335,7 +335,9 @@ window.MathJax = {
 
 <p>The development of sparse learning methods, or machine learning techniques that perform regression and model selection simultaneously, has exploded in recent years. Early versions of sparse regression include the <strong>L</strong>east <strong>A</strong>bsolute <strong>S</strong>hrinkage and <strong>S</strong>election <strong>O</strong>perator (LASSO; <a href="https://www.jstor.org/stable/2346178">Tibshirani, 1996</a>) and the similar (but not strictly sparse) Ridge regression, which both minimize the classic sum-of-squares loss function, but subject to constraints on the parameters. Specifically, the LASSO minimizes the loss function defined by</p>
 
-\[L(\boldsymbol \beta) = ({\bf y} - {\bf X} \boldsymbol \beta)^\top ({\bf y} - {\bf X}\boldsymbol \beta) + \lambda ||\boldsymbol \beta||_1\]
+<p>[
+L(\boldsymbol \beta) = ({\bf y} - {\bf X} \boldsymbol \beta)^\top ({\bf y} - {\bf X}\boldsymbol \beta) + \lambda ||\boldsymbol \beta||_1
+]</p>
 
 <table>
   <tbody>
@@ -344,7 +346,7 @@ window.MathJax = {
       <td> </td>
       <td>{\bf v}</td>
       <td> </td>
-      <td>_1\(is the\)L_1\(norm of the vector\){\bf v}\(, and\)\lambda\(is the penalty parameter. The\)L_1\(norm is equivalent to the sum of the magnitudes of all the elements in\)\boldsymbol \beta\(, penalizing the loss function for increases in the magnitudes of the regression coefficients. I like to think of this as *regression on a budget*. If there are strong signals in the data, estimating those large parameters uses up much of the budget, forcing the remaining parameter estimates to shrink towards zero\)^*$$.</td>
+      <td>_1 \(is the\)L_1\(norm of a vector\){\bf v}\(, and\)\lambda\(is the penalty parameter. The\)L_1\(norm is equivalent to the sum of the magnitudes of all the elements in\)\boldsymbol \beta\(, penalizing the loss function for increases in the magnitudes of the regression coefficients. I like to think of this as *regression on a budget*. If there are strong signals in the data, estimating those large parameters uses up much of the budget, forcing the remaining parameter estimates to shrink towards zero\)^*$$.</td>
     </tr>
   </tbody>
 </table>
@@ -367,7 +369,7 @@ window.MathJax = {
 
 <figure>
   <img src="/assets/images/figures/research/missing_eff_on_marginals.png" />
-  <figcaption> <small> Marginal distribution of the data with different missingness mechanisms. The theoretical marginal is shown in blue. Completely random missingness maintains the same marginal data distribution, allowing unbiased parameter recovery, while non-random missingness can bias the data distribution.</small> </figcaption>
+  <figcaption> Marginal distribution of the data with different missingness mechanisms. The theoretical marginal is shown in blue. Completely random missingness maintains the same marginal data distribution, allowing unbiased parameter recovery, while non-random missingness can bias the data distribution. </figcaption>
 </figure>
 
 
