@@ -18,7 +18,7 @@ Long-term data collection on ecological systems can help to illuminate how a sys
   2. **Forecasting**: Regularization / parameter ‘shrinkage’, or adding constraints to the model fitting procedure such that some regions of parameter space are penalized and some are favored, can help to protect against model overfitting, or fitting the model too closely to the observed data such that out-of-sample predictions are poor. Most Bayesian learning techniques include strongly informative prior distributions that favor parameter values close to zero. This can result in parameter shrinkage that may improve model forecasts of future states in time series, especially if the length of the observed time series is short and the data are noisy, making overfitting more likely.
   
 <figure>
-  <img src="/assets/images/figures/research/forecast_comparson_AR-p.png" style="height:200px">
+  <img src="/assets/images/figures/research/forecast_comparson_AR-p.png" height=200>
   <figcaption> Comparing forecasts when using different priors for regression coefficients and autoregressive parameters. Regularization with Gaussian and, even more so, Horseshoe priors, may improve forecasts.
   </figcaption>
 </figure>
