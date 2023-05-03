@@ -335,21 +335,8 @@ window.MathJax = {
 
 <p>The development of sparse learning methods, or machine learning techniques that perform regression and model selection simultaneously, has exploded in recent years. Early versions of sparse regression include the <strong>L</strong>east <strong>A</strong>bsolute <strong>S</strong>hrinkage and <strong>S</strong>election <strong>O</strong>perator (LASSO; <a href="https://www.jstor.org/stable/2346178">Tibshirani, 1996</a>) and the similar (but not strictly sparse) Ridge regression, which both minimize the classic sum-of-squares loss function, but subject to constraints on the parameters. Specifically, the LASSO minimizes the loss function defined by</p>
 
-<p>[
-L(\boldsymbol \beta) = ({\bf y} - {\bf X} \boldsymbol \beta)^\top ({\bf y} - {\bf X}\boldsymbol \beta) + \lambda ||\boldsymbol \beta||_1
-]</p>
-
-<table>
-  <tbody>
-    <tr>
-      <td>where \({\bf y}\) is the \(n\)-vector of responses, \({\bf X}\) is the \(n \times P\) model matrix, \(\boldsymbol \beta\) is the \(P\)-vector of regression coefficients, $$</td>
-      <td> </td>
-      <td>{\bf v}</td>
-      <td> </td>
-      <td>_1 \(is the\)L_1\(norm of a vector\){\bf v}\(, and\)\lambda\(is the penalty parameter. The\)L_1\(norm is equivalent to the sum of the magnitudes of all the elements in\)\boldsymbol \beta\(, penalizing the loss function for increases in the magnitudes of the regression coefficients. I like to think of this as *regression on a budget*. If there are strong signals in the data, estimating those large parameters uses up much of the budget, forcing the remaining parameter estimates to shrink towards zero\)^*$$.</td>
-    </tr>
-  </tbody>
-</table>
+<p>\(L(\boldsymbol \beta) = ({\bf y} - {\bf X} \boldsymbol \beta)^\top ({\bf y} - {\bf X}\boldsymbol \beta) + \lambda ||\boldsymbol \beta||_1\)
+where \({\bf y}\) is the \(n\)-vector of responses, \({\bf X}\) is the \(n \times P\) model matrix, \(\boldsymbol \beta\) is the \(P\)-vector of regression coefficients, \(||{\bf v}||_1\) is the \(L_1\) norm of a vector \({\bf v}\), and \(\lambda\) is the penalty parameter. The \(L_1\) norm is equivalent to the sum of the magnitudes of all the elements in \(\boldsymbol \beta\), penalizing the loss function for increases in the magnitudes of the regression coefficients. I like to think of this as <em>regression on a budget</em>. If there are strong signals in the data, estimating those large parameters uses up much of the budget, forcing the remaining parameter estimates to shrink towards zero\(^*\).</p>
 
 <p>Following these early developments and the recognition that the LASSO estimator is equivalent to the posterior mode estimate in a Bayesian regression in which the regression parameters are given independent Laplace priors (see <a href="https://doi.org/10.1198/016214508000000337">Park and Casella, 2008</a>), Bayesian sparse learning approaches have burgeoned in recent years. As a part of the <a href="https://microcollaborative.atlassian.net/wiki/spaces/MP/overview">Modelscape Consortium</a>, an interdisciplinary and inter-institutional working group, my colleagues and I are comparing readily available software for different sparse modeling approaches. Specifically, we are interested in comparing:</p>
 
