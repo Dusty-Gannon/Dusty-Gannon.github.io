@@ -2,9 +2,19 @@
 search: false
 ---
 
+/* Colors */
+$text-color: #000 !default;
+$muted-text-color: $text-color !default;
+$primary-color: #dd4124 !default;
+$border-color: mix(#fff, $text-color, 75%) !default;
+$footer-background-color: #000 !default;
+$link-color: #00496f !default;
+$masthead-link-color-hover: $text-color !default;
+$navicon-link-color-hover: mix(#fff, $text-color, 80%) !default;
+
+
 $link-color: #023047;
 $masthead-link-color: #023047;
-$info-color: #023047;
 
 $base00: #F3EFEF;
 $base01: #232a25;
@@ -25,5 +35,4 @@ $base0f: #867469;
 
 @charset "utf-8";
 
-@import "minimal-mistakes/skins/{{ site.minimal_mistakes_skin | default: 'default' }}"; // skin
 @import "minimal-mistakes"; // main partials
