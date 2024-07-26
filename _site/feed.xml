@@ -1,43 +1,220 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.3">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2024-07-26T13:15:11-07:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Dusty Gannon</title><subtitle>Website and blog for Dusty Gannon, statistical consultant and ecologist.</subtitle><author><name>Dusty Gannon</name></author><entry><title type="html">A tutorial on analyzing ranking data</title><link href="http://localhost:4000/common/issues/thurstone-tutorial/" rel="alternate" type="text/html" title="A tutorial on analyzing ranking data" /><published>2024-07-01T00:00:00-07:00</published><updated>2024-07-01T00:00:00-07:00</updated><id>http://localhost:4000/common/issues/thurstone-tutorial</id><content type="html" xml:base="http://localhost:4000/common/issues/thurstone-tutorial/">&lt;h2 id=&quot;ranking-data&quot;&gt;Ranking data&lt;/h2&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.3">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2024-07-26T16:02:56-07:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Dusty Gannon</title><subtitle>Website and blog for Dusty Gannon, statistical consultant and ecologist.</subtitle><author><name>Dusty Gannon</name></author><entry><title type="html">A tutorial on analyzing ranking data</title><link href="http://localhost:4000/common/issues/thurstone_tutorial/" rel="alternate" type="text/html" title="A tutorial on analyzing ranking data" /><published>2024-07-01T00:00:00-07:00</published><updated>2024-07-01T00:00:00-07:00</updated><id>http://localhost:4000/common/issues/thurstone_tutorial</id><content type="html" xml:base="http://localhost:4000/common/issues/thurstone_tutorial/"># Ranking data
 
-&lt;p&gt;Ranking data are common in survey-based research. Ranking data arise from survey questions in which a respondent is asked to rank a set of items by their priority or preference in the view of the respondent. I have recently encountered this type of data in my consulting practice and discovered that there is a relative paucity of approachable material available on analyzing these data, particularly when the research questions involve differences among populations of interest or covariates that could drive different rankings. This post is meant to act as a guide for graduate-level readers and above, with code for fitting the popular Thurstone Case V model with the potential for covariates using R package &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;lavaan&lt;/code&gt; &lt;a class=&quot;citation&quot; href=&quot;#lavaan&quot;&gt;(Rosseel, 2012)&lt;/a&gt;. I include some of the mathematical details for interested readers, but I point to recently developed R packages (shamelessly promoting one I am developing as well) that do not require understanding of all the nuts and bolts.&lt;/p&gt;
+Ranking data are common in survey-based research. Ranking data arise from survey questions in which a respondent is asked to rank a set of items by their priority or preference in the view of the respondent. I have recently encountered this type of data in my consulting practice and discovered that there is a relative paucity of approachable material available on analyzing these data, particularly when the research questions involve differences among populations of interest or covariates that could drive different rankings. This post is meant to act as a guide for graduate-level readers and above, with code for fitting the popular Thurstone Case V model with the potential for covariates using R package `lavaan` &lt;a class=&quot;citation&quot; href=&quot;#lavaan&quot;&gt;(Rosseel, 2012)&lt;/a&gt;. I include some of the mathematical details for interested readers, but I point to recently developed R packages (shamelessly promoting one I am developing as well) that do not require understanding of all the nuts and bolts.
+
+&gt; **Important note**: I am not a social scientist! I do not pretend to know or understand the human psychology and social science underpinning the development of these approaches. To any social scientists out there, please forgive any inaccuracies in that realm.
+
+## The data structure
+
+Ranking data generally come as a set of integers in response to a list of items that a survey respondent is asked to rank in terms of importance, priority, preference, etc. For this post, we will focus on some example data (Table \@ref(tab:eg-data)) in which we assume that 50 respondents were surveyed from 3 populations of interest. To ground this example in the natural resources, assume that the populations of interest are hikers, mountain bikers, and hunters in the central Willamette Valley, OR. Each respondent is asked to rank the items in a list of possible future projects in a local recreation area. The list of items includes *trail maintenance* (of existing trails), *trail construction* (building new trails), *invasive species management*, and *forest thinning*. Assume for the purposes of this post that the respondents answer honestly and that they constitute representative samples of the populations of interest.
+
+```{r echo=FALSE, message=FALSE}
+# create some data
+# some ranking data from different groups
+mus &lt;- list(
+  hikers = c(0, 0.5, -0.5, 2),
+  mtbikers = c(0, -2, 1, 0.5),
+  hunters = c(0, -0.5, -1, -1.5)
+)
+
+# create the rank data
+ranks &lt;- lapply(
+  mus,
+  FUN = function(mu){
+    sapply(
+    1:50,
+    function(x){
+      s &lt;- rnorm(length(mu), mean = mu)
+      return(order(s))
+    }
+    )
+  }
+) 
+
+rank_dat &lt;- Reduce(cbind, ranks) |&gt; t() |&gt; as.data.frame()
+
+# add column names and a group label
+rank_dat &lt;- dplyr::mutate(
+  rank_dat,
+  group = rep(names(ranks), each = 50)
+)
+names(rank_dat)[1:4] &lt;- c(&quot;trail_maintenance&quot;, &quot;new_trails&quot;, &quot;invasives&quot;, &quot;thinning&quot;)
+
+kableExtra::kable(
+  head(rank_dat),
+  format = &quot;simple&quot;,
+  col.names = c(&quot;Trail maintenance&quot;, &quot;Trail construction&quot;, &quot;Invasive species management&quot;, &quot;Forest thinning&quot;, &quot;Group&quot;),
+  caption = &quot;Example dataset. Note that a lower rank means higher priority or preference in this case.&quot;,
+  label = &quot;eg-data&quot;
+)
+```
+
+Assume we have the following, seemingly straightforward research question:
+
+**Research question**: Do different user groups prefer different management actions for the upcoming projects?
+
+Addressing this question is trickier than it might seem on first glance. These data are multivariate, since the measured unit is the respondent and a respondent's answer includes a set of four numbers, discrete, and bounded on both ends (i.e., a rank of $$&gt;4$$ or $$&lt;1$$ is not possible). Any one of these characteristics could complicate an analysis on its own; now we get all of them at once!
+
+# Analysis
+
+Before we get into the approach this post is meant to introduce, let's consider some possible alternatives and their potential pitfalls. I only include these considerations because I have seen these approaches used in practice without recognition of the issues.
+
+## Potential work-arounds?
+
+### ANOVA?
+
+In a simpler situation than our example above in which the question is simply *is there a preference for some items over others*, it may be tempting to make an appeal to the central limit theorem and argue that, despite the discrete nature of the data, the sampling distribution of the mean rank should approach a normal distribution with large sample sizes ($$n &gt; 30$$?). Thus, perhaps one-way ANOVA may be appropriate, treating each item as a group (*factor level* in the classical ANOVA lingo) and testing the null hypothesis $$H_0: \mu_1 = \mu_2 = \mu_3 = ... = \mu_K$$, where $$K$$ is the number of items and $$\mu_k$$ is the mean rank of the $$k^\text{th}$$ item? However, the first problem with this is that ranks from the same respondent are not independent of one another. If I know that item 1 was ranked first by respondent $$i$$, this gives me information about the possible ranks of the remaining items.
+
+### LMMs?
+
+
+
+## References
+
+&lt;ol class=&quot;bibliography&quot;&gt;&lt;li&gt;&lt;span id=&quot;maydeu-olivares_SEM_2005&quot;&gt;Maydeu-Olivares, A., &amp;amp; Böckenholt, U. (2005). Structural Equation Modeling of Paired-Comparison and Ranking Data. &lt;i&gt;Psychological Methods&lt;/i&gt;, &lt;i&gt;10&lt;/i&gt;(3), 285–304. https://doi.org/10.1037/1082-989X.10.3.285&lt;/span&gt;&lt;/li&gt;
+&lt;li&gt;&lt;span id=&quot;lavaan&quot;&gt;Rosseel, Y. (2012). lavaan: An R Package for Structural Equation Modeling. &lt;i&gt;Journal of Statistical Software&lt;/i&gt;, &lt;i&gt;48&lt;/i&gt;(2), 1–36. https://doi.org/10.18637/jss.v048.i02&lt;/span&gt;&lt;/li&gt;&lt;/ol&gt;</content><author><name>Dusty Gannon</name></author><category term="Common" /><category term="issues" /><summary type="html"># Ranking data</summary></entry><entry><title type="html">A tutorial on analyzing ranking data</title><link href="http://localhost:4000/common/issues/thurstone_tutorial/" rel="alternate" type="text/html" title="A tutorial on analyzing ranking data" /><published>2024-07-01T00:00:00-07:00</published><updated>2024-07-01T00:00:00-07:00</updated><id>http://localhost:4000/common/issues/thurstone_tutorial</id><content type="html" xml:base="http://localhost:4000/common/issues/thurstone_tutorial/">&lt;h1 id=&quot;a-tutorial-on-analyzing-ranking-data&quot;&gt;A tutorial on analyzing ranking data&lt;/h1&gt;
+&lt;p&gt;July 2024&lt;/p&gt;
+
+&lt;h1 id=&quot;ranking-data&quot;&gt;Ranking data&lt;/h1&gt;
+
+&lt;p&gt;Ranking data are common in survey-based research. Ranking data arise
+from survey questions in which a respondent is asked to rank a set of
+items by their priority or preference in the view of the respondent. I
+have recently encountered this type of data in my consulting practice
+and discovered that there is a relative paucity of approachable material
+available on analyzing these data, particularly when the research
+questions involve differences among populations of interest or
+covariates that could drive different rankings. This post is meant to
+act as a guide for graduate-level readers and above, with code for
+fitting the popular Thurstone Case V model with the potential for
+covariates using R package &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;lavaan&lt;/code&gt; &lt;a class=&quot;citation&quot; href=&quot;#lavaan&quot;&gt;(Rosseel, 2012)&lt;/a&gt;. I include some of
+the mathematical details for interested readers, but I point to recently
+developed R packages (shamelessly promoting one I am developing as well)
+that do not require understanding of all the nuts and bolts.&lt;/p&gt;
 
 &lt;blockquote&gt;
-  &lt;p&gt;&lt;strong&gt;Important note&lt;/strong&gt;: I am not a social scientist! I do not pretend to know or understand the human psychology and social science underpinning the development of these approaches. To any social scientists out there, please forgive any inaccuracies in that realm.&lt;/p&gt;
+  &lt;p&gt;&lt;strong&gt;Important note&lt;/strong&gt;: I am not a social scientist! I do not pretend to
+know or understand the human psychology and social science
+underpinning the development of these approaches. To any social
+scientists out there, please forgive any inaccuracies in that realm.&lt;/p&gt;
 &lt;/blockquote&gt;
 
 &lt;h2 id=&quot;the-data-structure&quot;&gt;The data structure&lt;/h2&gt;
 
+&lt;p&gt;Ranking data generally come as a set of integers in response to a list
+of items that a survey respondent is asked to rank in terms of
+importance, priority, preference, etc. For this post, we will focus on
+some example data (Table &lt;a href=&quot;#tab:eg-data&quot;&gt;1&lt;/a&gt;) in which we
+assume that 50 respondents were surveyed from 3 populations of interest.
+To ground this example in the natural resources, assume that the
+populations of interest are hikers, mountain bikers, and hunters in the
+central Willamette Valley, OR. Each respondent is asked to rank the
+items in a list of possible future projects in a local recreation area.
+The list of items includes &lt;em&gt;trail maintenance&lt;/em&gt; (of existing trails),
+&lt;em&gt;trail construction&lt;/em&gt; (building new trails), &lt;em&gt;invasive species
+management&lt;/em&gt;, and &lt;em&gt;forest thinning&lt;/em&gt;. Assume for the purposes of this post
+that the respondents answer honestly and that they constitute
+representative samples of the populations of interest.&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: right&quot;&gt;Trail maintenance&lt;/th&gt;
+      &lt;th style=&quot;text-align: right&quot;&gt;Trail construction&lt;/th&gt;
+      &lt;th style=&quot;text-align: right&quot;&gt;Invasive species management&lt;/th&gt;
+      &lt;th style=&quot;text-align: right&quot;&gt;Forest thinning&lt;/th&gt;
+      &lt;th style=&quot;text-align: left&quot;&gt;Group&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;&lt;span id=&quot;tab:eg-data&quot;&gt;&lt;/span&gt;Table 1: Example dataset. Note that a
+lower rank means higher priority or preference in this case.&lt;/p&gt;
+
+&lt;p&gt;Assume we have the following, seemingly straightforward research
+question:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Research question&lt;/strong&gt;: Do different user groups prefer different
+management actions for the upcoming projects?&lt;/p&gt;
+
+&lt;p&gt;Addressing this question is trickier than it might seem on first glance.
+These data are multivariate, since the measured unit is the respondent
+and a respondent’s answer includes a set of four numbers, discrete, and
+bounded on both ends (i.e., a rank of \(&amp;gt;4\) or \(&amp;lt;1\) is not possible).
+Any one of these characteristics could complicate an analysis on its
+own; now we get all of them at once!&lt;/p&gt;
+
+&lt;h1 id=&quot;analysis&quot;&gt;Analysis&lt;/h1&gt;
+
+&lt;p&gt;Before we get into the approach this post is meant to introduce, let’s
+consider some possible alternatives and their potential pitfalls. I only
+include these considerations because I have seen these approaches used
+in practice without recognition of the issues.&lt;/p&gt;
+
+&lt;h2 id=&quot;potential-work-arounds&quot;&gt;Potential work-arounds?&lt;/h2&gt;
+
+&lt;h3 id=&quot;anova&quot;&gt;ANOVA?&lt;/h3&gt;
+
+&lt;p&gt;In a simpler situation than our example above in which the question is
+simply &lt;em&gt;is there a preference for some items over others&lt;/em&gt;, it may be
+tempting to make an appeal to the central limit theorem and argue that,
+despite the discrete nature of the data, the sampling distribution of
+the mean rank should approach a normal distribution with large sample
+sizes (\(n &amp;gt; 30\)?). Thus, one-way ANOVA may be appropriate, treating
+each item as a group (&lt;em&gt;factor level&lt;/em&gt; in the classical ANOVA lingo) and
+testing the null hypothesis
+\(H_0: \mu_1 = \mu_2 = \mu_3 = ... = \mu_K\), where \(K\) is the number
+of items and \(\mu_k\) is the mean rank of the \(k^\text{th}\) item.
+However, the first problem with this is that ranks from the same
+respondent are not independent of one another. If I know thank item 1
+was ranked first by respondent \(i\), this gives me information about
+the possible ranks of the remaining items.&lt;/p&gt;
+
 &lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
 
-&lt;ol class=&quot;bibliography&quot;&gt;&lt;li&gt;&lt;span id=&quot;lavaan&quot;&gt;Rosseel, Y. (2012). lavaan: An R Package for Structural Equation Modeling. &lt;i&gt;Journal of Statistical Software&lt;/i&gt;, &lt;i&gt;48&lt;/i&gt;(2), 1–36. https://doi.org/10.18637/jss.v048.i02&lt;/span&gt;&lt;/li&gt;&lt;/ol&gt;</content><author><name>Dusty Gannon</name></author><category term="Common" /><category term="issues" /><summary type="html">Ranking data</summary></entry><entry><title type="html">Identifying unidentifiability</title><link href="http://localhost:4000/common/issues/welcome-to-jekyll/" rel="alternate" type="text/html" title="Identifying unidentifiability" /><published>2023-01-04T13:26:05-08:00</published><updated>2023-01-04T13:26:05-08:00</updated><id>http://localhost:4000/common/issues/welcome-to-jekyll</id><content type="html" xml:base="http://localhost:4000/common/issues/welcome-to-jekyll/">&lt;blockquote&gt;
-  &lt;p&gt;&lt;em&gt;Leutenant Cauchy&lt;/em&gt;: Sir, we have an unidentified parameter entering regression airspace.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;&lt;em&gt;Admiral Gauss&lt;/em&gt;: Can we reparameterize and obtain their identity?&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;&lt;em&gt;Leutenant Cauchy&lt;/em&gt;: Trying now, Sir. No success.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;&lt;em&gt;Admiral Gauss&lt;/em&gt;: Do we have any prior information?&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;&lt;em&gt;Leutenant Cauchy&lt;/em&gt;: No, Sir.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;&lt;em&gt;Admiral Gauss&lt;/em&gt;: Shoot it down…&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;what-is-identifiability&quot;&gt;What is &lt;em&gt;identifiability&lt;/em&gt;?&lt;/h2&gt;
-
-&lt;p&gt;&lt;strong&gt;Formal definition&lt;/strong&gt;&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;A statistical model \(\mathcal{P} = \{P_\theta: \theta \in \Theta\}\) is &lt;em&gt;identifiable&lt;/em&gt; if the mapping of \(\theta \to P_\theta\) is one-to-one and invertible.&lt;/p&gt;
-&lt;/blockquote&gt;</content><author><name>Dusty Gannon</name></author><category term="Common" /><category term="issues" /><summary type="html">Leutenant Cauchy: Sir, we have an unidentified parameter entering regression airspace.</summary></entry></feed>
+&lt;ol class=&quot;bibliography&quot;&gt;&lt;li&gt;&lt;span id=&quot;maydeu-olivares_SEM_2005&quot;&gt;Maydeu-Olivares, A., &amp;amp; Böckenholt, U. (2005). Structural Equation Modeling of Paired-Comparison and Ranking Data. &lt;i&gt;Psychological Methods&lt;/i&gt;, &lt;i&gt;10&lt;/i&gt;(3), 285–304. https://doi.org/10.1037/1082-989X.10.3.285&lt;/span&gt;&lt;/li&gt;
+&lt;li&gt;&lt;span id=&quot;lavaan&quot;&gt;Rosseel, Y. (2012). lavaan: An R Package for Structural Equation Modeling. &lt;i&gt;Journal of Statistical Software&lt;/i&gt;, &lt;i&gt;48&lt;/i&gt;(2), 1–36. https://doi.org/10.18637/jss.v048.i02&lt;/span&gt;&lt;/li&gt;&lt;/ol&gt;</content><author><name>Dusty Gannon</name></author><category term="Common" /><category term="issues" /><summary type="html">A tutorial on analyzing ranking data July 2024</summary></entry></feed>

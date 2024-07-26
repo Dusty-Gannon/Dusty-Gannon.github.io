@@ -11,7 +11,7 @@
     <meta charset="utf-8">
 
 <!-- begin _includes/seo.html --><title>A tutorial on analyzing ranking data - Dusty Gannon</title>
-<meta name="description" content="Ranking data">
+<meta name="description" content="Website and blog for Dusty Gannon, statistical consultant and ecologist.">
 
 
   <meta name="author" content="Dusty Gannon">
@@ -24,10 +24,10 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:site_name" content="Dusty Gannon">
 <meta property="og:title" content="A tutorial on analyzing ranking data">
-<meta property="og:url" content="http://localhost:4000/common/issues/thurstone-tutorial/">
+<meta property="og:url" content="http://localhost:4000/_posts/2024-07-26-thurstone_tutorial/">
 
 
-  <meta property="og:description" content="Ranking data">
+  <meta property="og:description" content="Website and blog for Dusty Gannon, statistical consultant and ecologist.">
 
 
 
@@ -46,7 +46,7 @@
   
 
 
-<link rel="canonical" href="http://localhost:4000/common/issues/thurstone-tutorial/">
+<link rel="canonical" href="http://localhost:4000/_posts/2024-07-26-thurstone_tutorial/">
 
 
 
@@ -295,7 +295,7 @@ window.MathJax = {
 
   <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
     <meta itemprop="headline" content="A tutorial on analyzing ranking data">
-    <meta itemprop="description" content="Ranking data">
+    
     <meta itemprop="datePublished" content="2024-07-01T00:00:00-07:00">
     
 
@@ -303,35 +303,10 @@ window.MathJax = {
       
         <header>
           <h1 id="page-title" class="page__title" itemprop="headline">
-            <a href="http://localhost:4000/common/issues/thurstone-tutorial/" itemprop="url">A tutorial on analyzing ranking data
+            <a href="http://localhost:4000/_posts/2024-07-26-thurstone_tutorial/" itemprop="url">A tutorial on analyzing ranking data
 </a>
           </h1>
           
-
-  <p class="page__meta">
-    
-      
-      <span class="page__meta-date">
-        <i class="far fa-calendar-alt" aria-hidden="true"></i>
-        
-        <time datetime="2024-07-01T00:00:00-07:00">July 1, 2024</time>
-      </span>
-    
-
-    <span class="page__meta-sep"></span>
-
-    
-      
-      
-
-      <span class="page__meta-readtime">
-        <i class="far fa-clock" aria-hidden="true"></i>
-        
-          1 minute read
-        
-      </span>
-    
-  </p>
 
 
         </header>
@@ -342,25 +317,157 @@ window.MathJax = {
           <aside class="sidebar__right ">
             <nav class="toc">
               <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
-              <ul class="toc__menu"><li><a href="#ranking-data">Ranking data</a></li><li><a href="#the-data-structure">The data structure</a></li><li><a href="#references">References</a></li></ul>
+              <ul class="toc__menu"><li><a href="#a-tutorial-on-analyzing-ranking-data">A tutorial on analyzing ranking data</a></li><li><a href="#ranking-data">Ranking data</a><ul><li><a href="#the-data-structure">The data structure</a></li></ul></li><li><a href="#analysis">Analysis</a><ul><li><a href="#potential-work-arounds">Potential work-arounds?</a><ul><li><a href="#anova">ANOVA?</a></li></ul></li><li><a href="#references">References</a></li></ul></li></ul>
 
             </nav>
           </aside>
         
-        <h2 id="ranking-data">Ranking data</h2>
+        <h1 id="a-tutorial-on-analyzing-ranking-data">A tutorial on analyzing ranking data</h1>
+<p>July 2024</p>
 
-<p>Ranking data are common in survey-based research. Ranking data arise from survey questions in which a respondent is asked to rank a set of items by their priority or preference in the view of the respondent. I have recently encountered this type of data in my consulting practice and discovered that there is a relative paucity of approachable material available on analyzing these data, particularly when the research questions involve differences among populations of interest or covariates that could drive different rankings. This post is meant to act as a guide for graduate-level readers and above, with code for fitting the popular Thurstone Case V model with the potential for covariates using R package <code class="language-plaintext highlighter-rouge">lavaan</code> <a class="citation" href="#lavaan">(Rosseel, 2012)</a>. I include some of the mathematical details for interested readers, but I point to recently developed R packages (shamelessly promoting one I am developing as well) that do not require understanding of all the nuts and bolts.</p>
+<h1 id="ranking-data">Ranking data</h1>
+
+<p>Ranking data are common in survey-based research. Ranking data arise
+from survey questions in which a respondent is asked to rank a set of
+items by their priority or preference in the view of the respondent. I
+have recently encountered this type of data in my consulting practice
+and discovered that there is a relative paucity of approachable material
+available on analyzing these data, particularly when the research
+questions involve differences among populations of interest or
+covariates that could drive different rankings. This post is meant to
+act as a guide for graduate-level readers and above, with code for
+fitting the popular Thurstone Case V model with the potential for
+covariates using R package <code class="language-plaintext highlighter-rouge">lavaan</code> <a class="citation" href="#lavaan">(Rosseel, 2012)</a>. I include some of
+the mathematical details for interested readers, but I point to recently
+developed R packages (shamelessly promoting one I am developing as well)
+that do not require understanding of all the nuts and bolts.</p>
 
 <blockquote>
-  <p><strong>Important note</strong>: I am not a social scientist! I do not pretend to know or understand the human psychology and social science underpinning the development of these approaches. To any social scientists out there, please forgive any inaccuracies in that realm.</p>
+  <p><strong>Important note</strong>: I am not a social scientist! I do not pretend to
+know or understand the human psychology and social science
+underpinning the development of these approaches. To any social
+scientists out there, please forgive any inaccuracies in that realm.</p>
 </blockquote>
 
 <h2 id="the-data-structure">The data structure</h2>
 
+<p>Ranking data generally come as a set of integers in response to a list
+of items that a survey respondent is asked to rank in terms of
+importance, priority, preference, etc. For this post, we will focus on
+some example data (Table <a href="#tab:eg-data">1</a>) in which we
+assume that 50 respondents were surveyed from 3 populations of interest.
+To ground this example in the natural resources, assume that the
+populations of interest are hikers, mountain bikers, and hunters in the
+central Willamette Valley, OR. Each respondent is asked to rank the
+items in a list of possible future projects in a local recreation area.
+The list of items includes <em>trail maintenance</em> (of existing trails),
+<em>trail construction</em> (building new trails), <em>invasive species
+management</em>, and <em>forest thinning</em>. Assume for the purposes of this post
+that the respondents answer honestly and that they constitute
+representative samples of the populations of interest.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: right">Trail maintenance</th>
+      <th style="text-align: right">Trail construction</th>
+      <th style="text-align: right">Invasive species management</th>
+      <th style="text-align: right">Forest thinning</th>
+      <th style="text-align: left">Group</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: right">1</td>
+      <td style="text-align: right">3</td>
+      <td style="text-align: right">2</td>
+      <td style="text-align: right">4</td>
+      <td style="text-align: left">hikers</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">3</td>
+      <td style="text-align: right">2</td>
+      <td style="text-align: right">1</td>
+      <td style="text-align: right">4</td>
+      <td style="text-align: left">hikers</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">3</td>
+      <td style="text-align: right">1</td>
+      <td style="text-align: right">2</td>
+      <td style="text-align: right">4</td>
+      <td style="text-align: left">hikers</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">3</td>
+      <td style="text-align: right">1</td>
+      <td style="text-align: right">2</td>
+      <td style="text-align: right">4</td>
+      <td style="text-align: left">hikers</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">1</td>
+      <td style="text-align: right">3</td>
+      <td style="text-align: right">2</td>
+      <td style="text-align: right">4</td>
+      <td style="text-align: left">hikers</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">2</td>
+      <td style="text-align: right">3</td>
+      <td style="text-align: right">1</td>
+      <td style="text-align: right">4</td>
+      <td style="text-align: left">hikers</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><span id="tab:eg-data"></span>Table 1: Example dataset. Note that a
+lower rank means higher priority or preference in this case.</p>
+
+<p>Assume we have the following, seemingly straightforward research
+question:</p>
+
+<p><strong>Research question</strong>: Do different user groups prefer different
+management actions for the upcoming projects?</p>
+
+<p>Addressing this question is trickier than it might seem on first glance.
+These data are multivariate, since the measured unit is the respondent
+and a respondent’s answer includes a set of four numbers, discrete, and
+bounded on both ends (i.e., a rank of \(&gt;4\) or \(&lt;1\) is not possible).
+Any one of these characteristics could complicate an analysis on its
+own; now we get all of them at once!</p>
+
+<h1 id="analysis">Analysis</h1>
+
+<p>Before we get into the approach this post is meant to introduce, let’s
+consider some possible alternatives and their potential pitfalls. I only
+include these considerations because I have seen these approaches used
+in practice without recognition of the issues.</p>
+
+<h2 id="potential-work-arounds">Potential work-arounds?</h2>
+
+<h3 id="anova">ANOVA?</h3>
+
+<p>In a simpler situation than our example above in which the question is
+simply <em>is there a preference for some items over others</em>, it may be
+tempting to make an appeal to the central limit theorem and argue that,
+despite the discrete nature of the data, the sampling distribution of
+the mean rank should approach a normal distribution with large sample
+sizes (\(n &gt; 30\)?). Thus, one-way ANOVA may be appropriate, treating
+each item as a group (<em>factor level</em> in the classical ANOVA lingo) and
+testing the null hypothesis
+\(H_0: \mu_1 = \mu_2 = \mu_3 = ... = \mu_K\), where \(K\) is the number
+of items and \(\mu_k\) is the mean rank of the \(k^\text{th}\) item.
+However, the first problem with this is that ranks from the same
+respondent are not independent of one another. If I know thank item 1
+was ranked first by respondent \(i\), this gives me information about
+the possible ranks of the remaining items.</p>
+
 <h2 id="references">References</h2>
 
-<ol class="bibliography"><li><span id="lavaan">Rosseel, Y. (2012). lavaan: An R Package for Structural Equation Modeling. <i>Journal of Statistical Software</i>, <i>48</i>(2), 1–36. https://doi.org/10.18637/jss.v048.i02</span></li></ol>
-
+<ol class="bibliography"><li><span id="maydeu-olivares_SEM_2005">Maydeu-Olivares, A., &amp; Böckenholt, U. (2005). Structural Equation Modeling of Paired-Comparison and Ranking Data. <i>Psychological Methods</i>, <i>10</i>(3), 285–304. https://doi.org/10.1037/1082-989X.10.3.285</span></li>
+<li><span id="lavaan">Rosseel, Y. (2012). lavaan: An R Package for Structural Equation Modeling. <i>Journal of Statistical Software</i>, <i>48</i>(2), 1–36. https://doi.org/10.18637/jss.v048.i02</span></li></ol>
 
         
       </section>
@@ -370,117 +477,19 @@ window.MathJax = {
         
 
 
-  
-
-
-  
-
-  <p class="page__taxonomy">
-    <strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
-    <span itemprop="keywords">
-    
-      <a href="/categories/#common" class="page__taxonomy-item p-category" rel="tag">Common</a><span class="sep">, </span>
-    
-      <a href="/categories/#issues" class="page__taxonomy-item p-category" rel="tag">issues</a>
-    
-    </span>
-  </p>
-
-
         
 
   <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time class="dt-published" datetime="2024-07-01T00:00:00-07:00">July 1, 2024</time></p>
 
       </footer>
 
-      <section class="page__share">
-  
-
-  <a href="https://twitter.com/intent/tweet?text=A+tutorial+on+analyzing+ranking+data%20http%3A%2F%2Flocalhost%3A4000%2Fcommon%2Fissues%2Fthurstone-tutorial%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
-
-  <a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Flocalhost%3A4000%2Fcommon%2Fissues%2Fthurstone-tutorial%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
-
-  <a href="https://www.linkedin.com/shareArticle?mini=true&url=http%3A%2F%2Flocalhost%3A4000%2Fcommon%2Fissues%2Fthurstone-tutorial%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
-</section>
-
+      
 
       
-  <nav class="pagination">
-    
-      <a href="/common/issues/welcome-to-jekyll/" class="pagination--pager" title="Identifying unidentifiability
-">Previous</a>
-    
-    
-      <a href="#" class="pagination--pager disabled">Next</a>
-    
-  </nav>
-
     </div>
 
     
   </article>
-
-  
-  
-    
-<div class="page__related">
-  
-  <h2 class="page__related-title">You May Also Enjoy</h2>
-  <div class="grid__wrapper">
-    
-      
-      
-
-
-
-<div class="grid__item">
-  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-    
-    <h2 class="archive__item-title no_toc" itemprop="headline">
-      
-        <a href="/common/issues/welcome-to-jekyll/" rel="permalink">Identifying unidentifiability
-</a>
-      
-    </h2>
-    
-
-  <p class="page__meta">
-    
-      
-      <span class="page__meta-date">
-        <i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-        
-        <time datetime="2023-01-04T13:26:05-08:00">January 4, 2023</time>
-      </span>
-    
-
-    <span class="page__meta-sep"></span>
-
-    
-      
-      
-
-      <span class="page__meta-readtime">
-        <i class="far fa-fw fa-clock" aria-hidden="true"></i>
-        
-          less than 1 minute read
-        
-      </span>
-    
-  </p>
-
-
-    <p class="archive__item-excerpt" itemprop="description">
-  Leutenant Cauchy: Sir, we have an unidentified parameter entering regression airspace.
-
-
-</p>
-  </article>
-</div>
-
-    
-  </div>
-</div>
 
   
   
