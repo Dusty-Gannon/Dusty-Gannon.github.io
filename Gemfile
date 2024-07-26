@@ -7,7 +7,7 @@ source "https://rubygems.org"
 #
 # This will help ensure the proper Jekyll version is running.
 # Happy Jekylling!
-# gem "jekyll", "~> 4.3.1"
+# gem "jekyll", "~> 3.9.3"
 # This is the default theme for new Jekyll sites. You may change this to anything you like.
 gem "minima", "~> 2.5"
 gem "minimal-mistakes-jekyll"
@@ -18,5 +18,9 @@ gem "github-pages", group: :jekyll_plugins
 group :jekyll_plugins do
   gem "jekyll-feed", "~> 0.12"
   gem "jekyll-pandoc"
+  gem "jekyll-scholar"
+#  gem "jekyll", "~> 3.7.3"
 end
+
+gem "webrick", "~> 1.7"
 
