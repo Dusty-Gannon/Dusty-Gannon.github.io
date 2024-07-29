@@ -317,7 +317,7 @@ window.MathJax = {
           <aside class="sidebar__right ">
             <nav class="toc">
               <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
-              <ul class="toc__menu"><li><a href="#a-tutorial-on-analyzing-ranking-data">A tutorial on analyzing ranking data</a></li><li><a href="#ranking-data">Ranking data</a><ul><li><a href="#the-data-structure">The data structure</a></li></ul></li><li><a href="#analysis">Analysis</a><ul><li><a href="#potential-work-arounds">Potential work-arounds?</a><ul><li><a href="#anova">ANOVA?</a></li></ul></li><li><a href="#references">References</a></li></ul></li></ul>
+              <ul class="toc__menu"><li><a href="#a-tutorial-on-analyzing-ranking-data">A tutorial on analyzing ranking data</a></li><li><a href="#ranking-data">Ranking data</a><ul><li><a href="#the-data-structure">The data structure</a></li></ul></li><li><a href="#analysis">Analysis</a><ul><li><a href="#potential-work-arounds">Potential work-arounds?</a><ul><li><a href="#anova">ANOVA?</a></li><li><a href="#lmms">LMMs?</a></li></ul></li><li><a href="#references">References</a></li></ul></li></ul>
 
             </nav>
           </aside>
@@ -378,13 +378,6 @@ representative samples of the populations of interest.</p>
   </thead>
   <tbody>
     <tr>
-      <td style="text-align: right">1</td>
-      <td style="text-align: right">3</td>
-      <td style="text-align: right">2</td>
-      <td style="text-align: right">4</td>
-      <td style="text-align: left">hikers</td>
-    </tr>
-    <tr>
       <td style="text-align: right">3</td>
       <td style="text-align: right">2</td>
       <td style="text-align: right">1</td>
@@ -406,6 +399,13 @@ representative samples of the populations of interest.</p>
       <td style="text-align: left">hikers</td>
     </tr>
     <tr>
+      <td style="text-align: right">3</td>
+      <td style="text-align: right">1</td>
+      <td style="text-align: right">2</td>
+      <td style="text-align: right">4</td>
+      <td style="text-align: left">hikers</td>
+    </tr>
+    <tr>
       <td style="text-align: right">1</td>
       <td style="text-align: right">3</td>
       <td style="text-align: right">2</td>
@@ -413,9 +413,9 @@ representative samples of the populations of interest.</p>
       <td style="text-align: left">hikers</td>
     </tr>
     <tr>
-      <td style="text-align: right">2</td>
-      <td style="text-align: right">3</td>
       <td style="text-align: right">1</td>
+      <td style="text-align: right">3</td>
+      <td style="text-align: right">2</td>
       <td style="text-align: right">4</td>
       <td style="text-align: left">hikers</td>
     </tr>
@@ -454,15 +454,34 @@ simply <em>is there a preference for some items over others</em>, it may be
 tempting to make an appeal to the central limit theorem and argue that,
 despite the discrete nature of the data, the sampling distribution of
 the mean rank should approach a normal distribution with large sample
-sizes (\(n &gt; 30\)?). Thus, one-way ANOVA may be appropriate, treating
-each item as a group (<em>factor level</em> in the classical ANOVA lingo) and
-testing the null hypothesis
+sizes (\(n &gt; 30\)?). Thus, perhaps one-way ANOVA may be appropriate,
+treating each item as a group (<em>factor level</em> in the classical ANOVA
+lingo) and testing the null hypothesis
 \(H_0: \mu_1 = \mu_2 = \mu_3 = ... = \mu_K\), where \(K\) is the number
-of items and \(\mu_k\) is the mean rank of the \(k^\text{th}\) item.
+of items and \(\mu_k\) is the mean rank of the \(k^\text{th}\) item?
 However, the first problem with this is that ranks from the same
-respondent are not independent of one another. If I know thank item 1
-was ranked first by respondent \(i\), this gives me information about
-the possible ranks of the remaining items.</p>
+respondent are not independent of one another. If I know that item 1 was
+ranked first by respondent \(i\), this gives me information about the
+possible ranks of the remaining items ranked by respondent \(i\). This
+clearly violates the assumption of independent errors. Interestingly,
+this will actually make the analysis overly conservative rather than
+anti-conservative as is usually the case when the independence
+assumption is violated. This is because the errors within a respondent
+are <em>negatively</em> correlated, since, if I know item 1 is ranked with high
+priority (i.e., ranked with a small number), then the remaining items
+will be given lower priority (i.e., ranked with a large number). This
+inverse relationship induced negative correlation among the errors
+within a respondent.</p>
+
+<h3 id="lmms">LMMs?</h3>
+
+<p>Indeed, an overly conservative analysis may not be much of a concern in
+some cases. For example, if the goal is to inform policy or management
+decisions, caution may be warranted. Alternatively, one may want
+confidence intervals that are as tight as they can be and still be
+valid. In this case, one may argue that we have tools to account for
+correlated errors and that a linear mixed model with an unstructured
+correlation matrix (see, for example, <code class="language-plaintext highlighter-rouge">?nlme::corStruct()</code>)</p>
 
 <h2 id="references">References</h2>
 

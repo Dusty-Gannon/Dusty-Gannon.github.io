@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.3">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2024-07-26T16:02:56-07:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Dusty Gannon</title><subtitle>Website and blog for Dusty Gannon, statistical consultant and ecologist.</subtitle><author><name>Dusty Gannon</name></author><entry><title type="html">A tutorial on analyzing ranking data</title><link href="http://localhost:4000/common/issues/thurstone_tutorial/" rel="alternate" type="text/html" title="A tutorial on analyzing ranking data" /><published>2024-07-01T00:00:00-07:00</published><updated>2024-07-01T00:00:00-07:00</updated><id>http://localhost:4000/common/issues/thurstone_tutorial</id><content type="html" xml:base="http://localhost:4000/common/issues/thurstone_tutorial/"># Ranking data
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.3">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2024-07-29T12:12:44-07:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Dusty Gannon</title><subtitle>Website and blog for Dusty Gannon, statistical consultant and ecologist.</subtitle><author><name>Dusty Gannon</name></author><entry><title type="html">A tutorial on analyzing ranking data</title><link href="http://localhost:4000/common/issues/thurstone_tutorial/" rel="alternate" type="text/html" title="A tutorial on analyzing ranking data" /><published>2024-07-01T00:00:00-07:00</published><updated>2024-07-01T00:00:00-07:00</updated><id>http://localhost:4000/common/issues/thurstone_tutorial</id><content type="html" xml:base="http://localhost:4000/common/issues/thurstone_tutorial/"># Ranking data
 
 Ranking data are common in survey-based research. Ranking data arise from survey questions in which a respondent is asked to rank a set of items by their priority or preference in the view of the respondent. I have recently encountered this type of data in my consulting practice and discovered that there is a relative paucity of approachable material available on analyzing these data, particularly when the research questions involve differences among populations of interest or covariates that could drive different rankings. This post is meant to act as a guide for graduate-level readers and above, with code for fitting the popular Thurstone Case V model with the potential for covariates using R package `lavaan` &lt;a class=&quot;citation&quot; href=&quot;#lavaan&quot;&gt;(Rosseel, 2012)&lt;/a&gt;. I include some of the mathematical details for interested readers, but I point to recently developed R packages (shamelessly promoting one I am developing as well) that do not require understanding of all the nuts and bolts.
 
@@ -63,16 +63,24 @@ Before we get into the approach this post is meant to introduce, let's consider 
 
 ### ANOVA?
 
-In a simpler situation than our example above in which the question is simply *is there a preference for some items over others*, it may be tempting to make an appeal to the central limit theorem and argue that, despite the discrete nature of the data, the sampling distribution of the mean rank should approach a normal distribution with large sample sizes ($$n &gt; 30$$?). Thus, perhaps one-way ANOVA may be appropriate, treating each item as a group (*factor level* in the classical ANOVA lingo) and testing the null hypothesis $$H_0: \mu_1 = \mu_2 = \mu_3 = ... = \mu_K$$, where $$K$$ is the number of items and $$\mu_k$$ is the mean rank of the $$k^\text{th}$$ item? However, the first problem with this is that ranks from the same respondent are not independent of one another. If I know that item 1 was ranked first by respondent $$i$$, this gives me information about the possible ranks of the remaining items.
+In a simpler situation than our example above in which the question is simply *is there a preference for some items over others*, it may be tempting to make an appeal to the central limit theorem (CLT) and argue that, despite the discrete nature of the data, the sampling distribution of the mean rank should approach a normal distribution with large sample sizes ($$n &gt; 30$$?). Thus, perhaps one-way ANOVA may be appropriate, treating each item as a group (*factor level* in the classical ANOVA lingo) and testing the null hypothesis $$H_0: \mu_1 = \mu_2 = \mu_3 = ... = \mu_K$$, where $$K$$ is the number of items and $$\mu_k$$ is the mean rank of the $$k^\text{th}$$ item? However, the first problem with this is that ranks from the same respondent are not independent of one another. If I know that item 1 was ranked first by respondent $$i$$, this gives me information about the possible ranks of the remaining items ranked by respondent $$i$$. This clearly violates the assumption of independent errors. Interestingly, this will actually make the analysis overly conservative rather than anti-conservative as is usually the case when the independence assumption is violated. This is because the errors within a respondent are *negatively* correlated, since, if I know item 1 is ranked with high priority (i.e., ranked with a small number), then the remaining items will be given lower priority (i.e., ranked with a large number). This inverse relationship induced negative correlation among the errors within a respondent.
 
 ### LMMs?
+
+Indeed, an overly conservative analysis may not be much of a concern in some cases. For example, if the goal is to inform policy or management decisions, caution may be warranted. Alternatively, one may want confidence intervals that are as tight as they can be and still be valid. In this case, one may argue that we have tools to account for correlated errors and that a linear mixed model with an unstructured correlation matrix (see, for example, `?nlme::corStruct()` (missing reference)) to model the correlation of the errors within a respondent may be a good option. Furthermore, one could concoct a model to address the research question above using factors for the group to which the respondent belongs and the item being ranked, as well as the interaction between the two factors. I would not argue with either of these views *as long as the sample sizes are large and the mean ranks don't get too close to the bounds of 1 and* $$K$$. Otherwise, due to the bounds on the support of the response variable, residuals plots may commonly look like Figure \@ref(fig:bad-resids), and an appeal to the CLT may not be justified.
+
+## Thurstone's model
+
+Louis Leon Thurstone was an early pioneer in psychology and psychometrics. He helped develop many analytical approaches still commonly used in practice today, including factor analysis. In fact, the Thurstone case V model that this post is about is a special case of confirmatory factor analysis.
 
 
 
 ## References
 
 &lt;ol class=&quot;bibliography&quot;&gt;&lt;li&gt;&lt;span id=&quot;maydeu-olivares_SEM_2005&quot;&gt;Maydeu-Olivares, A., &amp;amp; Böckenholt, U. (2005). Structural Equation Modeling of Paired-Comparison and Ranking Data. &lt;i&gt;Psychological Methods&lt;/i&gt;, &lt;i&gt;10&lt;/i&gt;(3), 285–304. https://doi.org/10.1037/1082-989X.10.3.285&lt;/span&gt;&lt;/li&gt;
-&lt;li&gt;&lt;span id=&quot;lavaan&quot;&gt;Rosseel, Y. (2012). lavaan: An R Package for Structural Equation Modeling. &lt;i&gt;Journal of Statistical Software&lt;/i&gt;, &lt;i&gt;48&lt;/i&gt;(2), 1–36. https://doi.org/10.18637/jss.v048.i02&lt;/span&gt;&lt;/li&gt;&lt;/ol&gt;</content><author><name>Dusty Gannon</name></author><category term="Common" /><category term="issues" /><summary type="html"># Ranking data</summary></entry><entry><title type="html">A tutorial on analyzing ranking data</title><link href="http://localhost:4000/common/issues/thurstone_tutorial/" rel="alternate" type="text/html" title="A tutorial on analyzing ranking data" /><published>2024-07-01T00:00:00-07:00</published><updated>2024-07-01T00:00:00-07:00</updated><id>http://localhost:4000/common/issues/thurstone_tutorial</id><content type="html" xml:base="http://localhost:4000/common/issues/thurstone_tutorial/">&lt;h1 id=&quot;a-tutorial-on-analyzing-ranking-data&quot;&gt;A tutorial on analyzing ranking data&lt;/h1&gt;
+&lt;li&gt;&lt;span id=&quot;nlme&quot;&gt;Pinheiro, J., Bates, D., &amp;amp; R Core Team. (2024). &lt;i&gt;nlme: Linear and Nonlinear Mixed Effects Models&lt;/i&gt;. https://CRAN.R-project.org/package=nlme&lt;/span&gt;&lt;/li&gt;
+&lt;li&gt;&lt;span id=&quot;lavaan&quot;&gt;Rosseel, Y. (2012). lavaan: An R Package for Structural Equation Modeling. &lt;i&gt;Journal of Statistical Software&lt;/i&gt;, &lt;i&gt;48&lt;/i&gt;(2), 1–36. https://doi.org/10.18637/jss.v048.i02&lt;/span&gt;&lt;/li&gt;
+&lt;li&gt;&lt;span id=&quot;thurstone_wiki&quot;&gt;Wikipedia contributors. (2024). &lt;i&gt;Thurstone scale — Wikipedia, The Free Encyclopedia&lt;/i&gt;. https://en.wikipedia.org/w/index.php?title=Thurstone_scale&amp;oldid=1218530864&lt;/span&gt;&lt;/li&gt;&lt;/ol&gt;</content><author><name>Dusty Gannon</name></author><category term="Common" /><category term="issues" /><summary type="html"># Ranking data</summary></entry><entry><title type="html">A tutorial on analyzing ranking data</title><link href="http://localhost:4000/common/issues/thurstone_tutorial/" rel="alternate" type="text/html" title="A tutorial on analyzing ranking data" /><published>2024-07-01T00:00:00-07:00</published><updated>2024-07-01T00:00:00-07:00</updated><id>http://localhost:4000/common/issues/thurstone_tutorial</id><content type="html" xml:base="http://localhost:4000/common/issues/thurstone_tutorial/">&lt;h1 id=&quot;a-tutorial-on-analyzing-ranking-data&quot;&gt;A tutorial on analyzing ranking data&lt;/h1&gt;
 &lt;p&gt;July 2024&lt;/p&gt;
 
 &lt;h1 id=&quot;ranking-data&quot;&gt;Ranking data&lt;/h1&gt;
@@ -128,13 +136,6 @@ representative samples of the populations of interest.&lt;/p&gt;
   &lt;/thead&gt;
   &lt;tbody&gt;
     &lt;tr&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
-      &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
@@ -156,6 +157,13 @@ representative samples of the populations of interest.&lt;/p&gt;
       &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
@@ -163,9 +171,9 @@ representative samples of the populations of interest.&lt;/p&gt;
       &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
       &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
     &lt;/tr&gt;
@@ -204,15 +212,34 @@ simply &lt;em&gt;is there a preference for some items over others&lt;/em&gt;, it
 tempting to make an appeal to the central limit theorem and argue that,
 despite the discrete nature of the data, the sampling distribution of
 the mean rank should approach a normal distribution with large sample
-sizes (\(n &amp;gt; 30\)?). Thus, one-way ANOVA may be appropriate, treating
-each item as a group (&lt;em&gt;factor level&lt;/em&gt; in the classical ANOVA lingo) and
-testing the null hypothesis
+sizes (\(n &amp;gt; 30\)?). Thus, perhaps one-way ANOVA may be appropriate,
+treating each item as a group (&lt;em&gt;factor level&lt;/em&gt; in the classical ANOVA
+lingo) and testing the null hypothesis
 \(H_0: \mu_1 = \mu_2 = \mu_3 = ... = \mu_K\), where \(K\) is the number
-of items and \(\mu_k\) is the mean rank of the \(k^\text{th}\) item.
+of items and \(\mu_k\) is the mean rank of the \(k^\text{th}\) item?
 However, the first problem with this is that ranks from the same
-respondent are not independent of one another. If I know thank item 1
-was ranked first by respondent \(i\), this gives me information about
-the possible ranks of the remaining items.&lt;/p&gt;
+respondent are not independent of one another. If I know that item 1 was
+ranked first by respondent \(i\), this gives me information about the
+possible ranks of the remaining items ranked by respondent \(i\). This
+clearly violates the assumption of independent errors. Interestingly,
+this will actually make the analysis overly conservative rather than
+anti-conservative as is usually the case when the independence
+assumption is violated. This is because the errors within a respondent
+are &lt;em&gt;negatively&lt;/em&gt; correlated, since, if I know item 1 is ranked with high
+priority (i.e., ranked with a small number), then the remaining items
+will be given lower priority (i.e., ranked with a large number). This
+inverse relationship induced negative correlation among the errors
+within a respondent.&lt;/p&gt;
+
+&lt;h3 id=&quot;lmms&quot;&gt;LMMs?&lt;/h3&gt;
+
+&lt;p&gt;Indeed, an overly conservative analysis may not be much of a concern in
+some cases. For example, if the goal is to inform policy or management
+decisions, caution may be warranted. Alternatively, one may want
+confidence intervals that are as tight as they can be and still be
+valid. In this case, one may argue that we have tools to account for
+correlated errors and that a linear mixed model with an unstructured
+correlation matrix (see, for example, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;?nlme::corStruct()&lt;/code&gt;)&lt;/p&gt;
 
 &lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
 

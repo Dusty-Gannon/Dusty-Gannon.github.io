@@ -59,12 +59,12 @@ representative samples of the populations of interest.
 
 | Trail maintenance | Trail construction | Invasive species management | Forest thinning | Group  |
 |------------------:|-------------------:|----------------------------:|----------------:|:-------|
-|                 1 |                  3 |                           2 |               4 | hikers |
 |                 3 |                  2 |                           1 |               4 | hikers |
 |                 3 |                  1 |                           2 |               4 | hikers |
 |                 3 |                  1 |                           2 |               4 | hikers |
+|                 3 |                  1 |                           2 |               4 | hikers |
 |                 1 |                  3 |                           2 |               4 | hikers |
-|                 2 |                  3 |                           1 |               4 | hikers |
+|                 1 |                  3 |                           2 |               4 | hikers |
 
 <span id="tab:eg-data"></span>Table 1: Example dataset. Note that a
 lower rank means higher priority or preference in this case.
@@ -98,15 +98,34 @@ simply *is there a preference for some items over others*, it may be
 tempting to make an appeal to the central limit theorem and argue that,
 despite the discrete nature of the data, the sampling distribution of
 the mean rank should approach a normal distribution with large sample
-sizes ($$n > 30$$?). Thus, one-way ANOVA may be appropriate, treating
-each item as a group (*factor level* in the classical ANOVA lingo) and
-testing the null hypothesis
+sizes ($$n > 30$$?). Thus, perhaps one-way ANOVA may be appropriate,
+treating each item as a group (*factor level* in the classical ANOVA
+lingo) and testing the null hypothesis
 $$H_0: \mu_1 = \mu_2 = \mu_3 = ... = \mu_K$$, where $$K$$ is the number
-of items and $$\mu_k$$ is the mean rank of the $$k^\text{th}$$ item.
+of items and $$\mu_k$$ is the mean rank of the $$k^\text{th}$$ item?
 However, the first problem with this is that ranks from the same
-respondent are not independent of one another. If I know thank item 1
-was ranked first by respondent $$i$$, this gives me information about
-the possible ranks of the remaining items.
+respondent are not independent of one another. If I know that item 1 was
+ranked first by respondent $$i$$, this gives me information about the
+possible ranks of the remaining items ranked by respondent $$i$$. This
+clearly violates the assumption of independent errors. Interestingly,
+this will actually make the analysis overly conservative rather than
+anti-conservative as is usually the case when the independence
+assumption is violated. This is because the errors within a respondent
+are *negatively* correlated, since, if I know item 1 is ranked with high
+priority (i.e., ranked with a small number), then the remaining items
+will be given lower priority (i.e., ranked with a large number). This
+inverse relationship induced negative correlation among the errors
+within a respondent.
+
+### LMMs?
+
+Indeed, an overly conservative analysis may not be much of a concern in
+some cases. For example, if the goal is to inform policy or management
+decisions, caution may be warranted. Alternatively, one may want
+confidence intervals that are as tight as they can be and still be
+valid. In this case, one may argue that we have tools to account for
+correlated errors and that a linear mixed model with an unstructured
+correlation matrix (see, for example, `?nlme::corStruct()`)
 
 ## References
 

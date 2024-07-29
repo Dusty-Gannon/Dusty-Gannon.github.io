@@ -48,6 +48,8 @@ Botany and Plant Pathology, OSU
 
  - **FES 524: Natural Resources Data Analysis**
  
+ - **FES/FERM 405: Introduction to coding using R**
+ 
 ### Past teaching assisstantships
 
   - **BOT 575: Comparative Genomics** - *Instructor: Aaron Liston, BPP, OSU*
@@ -60,6 +62,8 @@ Botany and Plant Pathology, OSU
 
 
 ## Select publications
+
+  - Lowman, H. E., M. DeSiervo, R. O. Hall, J. P. Jahner, S. O. Jimoh, D. C. Laughlin, A. C. Patterson, C. Weiss-Lehman, C. C. Barbosa, K. L. Bell, J. R. Blaszczak, C. A. Buerkle, A. M. Carter, S. M. Collins, V. DeLeo, M. Dunkle, **D. Gannon**, ..., and L. G. Shoemaker. Collaborative consortia can boost postdoctoral workforce development. *Proceedings of the National Academy of Sciences* (2024) 121:e2401812121.
 
   - **Gannon, D. G.**, Hadley, A. S., Frey, S. J. K. Pairing automated mark-recapture and social network models to explore the effects of landscape configuration on hummingbird foraging patterns. *Biology Letters* **17** (2021).
   
@@ -76,5 +80,6 @@ Botany and Plant Pathology, OSU
   - STAN (*fluent*)
   - Unix/Linux (*competent*)
   - LaTeX (*competent*)
+  - C++ (*competent*)
 
 
