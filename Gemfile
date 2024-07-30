@@ -19,6 +19,7 @@ group :jekyll_plugins do
   gem "jekyll-feed", "~> 0.12"
   gem "jekyll-pandoc"
   gem "jekyll-scholar"
+  gem "jekyll-mermaid"
 #  gem "jekyll", "~> 3.7.3"
 end
 
