@@ -4,7 +4,7 @@ classes: wide
 title:  "A tutorial on analyzing ranking data"
 subtitle: "Casting Thurstone Case V models as SEMs"
 date:   "July 2024"
-categories: Common issues
+categories: "Common issues"
 usemathjax: true
 toc: true
 output:
@@ -59,12 +59,12 @@ representative samples of the populations of interest.
 
 | Trail maintenance | Trail construction | Invasive species management | Forest thinning | Group  |
 |------------------:|-------------------:|----------------------------:|----------------:|:-------|
-|                 3 |                  2 |                           1 |               4 | hikers |
+|                 3 |                  1 |                           2 |               4 | hikers |
 |                 3 |                  1 |                           2 |               4 | hikers |
 |                 3 |                  1 |                           2 |               4 | hikers |
 |                 3 |                  1 |                           2 |               4 | hikers |
 |                 1 |                  3 |                           2 |               4 | hikers |
-|                 1 |                  3 |                           2 |               4 | hikers |
+|                 1 |                  3 |                           4 |               2 | hikers |
 
 <span id="tab:eg-data"></span>Table 1: Example dataset. Note that a
 lower rank means higher priority or preference in this case.
@@ -95,9 +95,9 @@ in practice without recognition of the issues.
 
 In a simpler situation than our example above in which the question is
 simply *is there a preference for some items over others*, it may be
-tempting to make an appeal to the central limit theorem and argue that,
-despite the discrete nature of the data, the sampling distribution of
-the mean rank should approach a normal distribution with large sample
+tempting to make an appeal to the central limit theorem (CLT) and argue
+that, despite the discrete nature of the data, the sampling distribution
+of the mean rank should approach a normal distribution with large sample
 sizes ($$n > 30$$?). Thus, perhaps one-way ANOVA may be appropriate,
 treating each item as a group (*factor level* in the classical ANOVA
 lingo) and testing the null hypothesis
@@ -125,8 +125,61 @@ decisions, caution may be warranted. Alternatively, one may want
 confidence intervals that are as tight as they can be and still be
 valid. In this case, one may argue that we have tools to account for
 correlated errors and that a linear mixed model with an unstructured
-correlation matrix (see, for example, `?nlme::corStruct()`)
+correlation matrix (see, for example, `?nlme::corStruct()` {% cite nlme
+%}) to model the correlation of the errors within a respondent may be a
+good option. Furthermore, one could concoct a model to address the
+research question above using factors for the group to which the
+respondent belongs and the item being ranked, as well as the interaction
+between the two factors. This very well might be a reasonable approach,
+*particularly if the sample sizes are large and the mean ranks don’t get
+too close to the bounds of 1 and* $$K$$. Otherwise, due to the bounds on
+the support of the response variable, residuals plots may commonly look
+like Figure <a href="#fig:bad-resids"><strong>??</strong></a>, and an
+appeal to the CLT may not be justified. **However**, there is one
+additional problem with this approach that is more philosophical than it
+is technically a statistical issue. Namely, is it really a good idea to
+say that the difference between a rank of 1 and 2 is the same as the
+difference between ranks 2 and 3? This is what we are implying by
+treating the ranks as integer values in the approaches discussed thus
+far, but I would argue that this seems to me to like it would rarely be
+a good idea.
+
+As an extreme example, consider the case where I am asked to rank the
+foods ice cream (🍦), pie (🥧), and broccoli (🥦) in terms of what I
+want for dessert tonight. If I give these items ranks $$\{1,2,3\}$$, is
+it reasonable to think that my preference for ice cream over pie is of
+the same magnitude as my preference for pie over broccoli!? Don’t get me
+wrong, I love broccoli, but for dessert, pie and ice cream are *way*
+better. The models discussed below handle all of these issues quite
+elegantly.
+
+## Thurstone’s model
+
+Louis Leon Thurstone was an early pioneer in psychology and
+psychometrics. He helped develop many analytical approaches still
+commonly used in practice today, including factor analysis. In fact, the
+Thurstone case V model that this post is about is a special case of
+confirmatory factor analysis. Thurstone conceptualized his models
+assuming that a person’s view or opinion of an item they are presented
+with in a survey is on a continuum, a scale that he called the *utility
+scale*. In other words, the item holds a certain *utility*[^1] to a
+person that is not on a 1-5 or 1-10 integer scale as we often present in
+a survey. Similarly, if the same item is presented to a population of
+people, the utilities for these people should represent a distribution
+of utilities.
+
+Unfortunately, we have no way to measure the utility an item holds for a
+person, but we can get a sense of utility distributions relative to one
+another for a population of interest. We do this by asking a random
+sample of respondents to rank a set of items in terms of the target of
+the research (e.g., least to most preferred). The Thurstone models then
+assume that, if a certain person is presented with items $$1,2,...,K$$,
+then they will have a realized vector of utilities
+$${\bf u} = (u_1, u_2, ..., u_K)^\top$$.
 
 ## References
 
 {% bibliography –file references_ranking_data_blog.bib %}
+
+[^1]: *Utility* seems very, well, utilitarian to me. I would suggest
+    that *value* might be better terminology for this day and age.
