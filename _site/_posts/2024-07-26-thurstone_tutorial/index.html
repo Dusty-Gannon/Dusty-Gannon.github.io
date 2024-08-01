@@ -317,15 +317,12 @@ window.MathJax = {
           <aside class="sidebar__right ">
             <nav class="toc">
               <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
-              <ul class="toc__menu"><li><a href="#a-tutorial-on-analyzing-ranking-data">A tutorial on analyzing ranking data</a></li><li><a href="#ranking-data">Ranking data</a><ul><li><a href="#the-data-structure">The data structure</a></li></ul></li><li><a href="#analysis">Analysis</a><ul><li><a href="#potential-work-arounds">Potential work-arounds?</a><ul><li><a href="#anova">ANOVA?</a></li><li><a href="#lmms">LMMs?</a></li></ul></li><li><a href="#thurstones-model">Thurstone’s model</a></li><li><a href="#references">References</a></li></ul></li></ul>
+              <ul class="toc__menu"><li><a href="#ranking-data">Ranking data</a><ul><li><a href="#the-data-structure">The data structure</a></li></ul></li><li><a href="#analysis">Analysis</a><ul><li><a href="#potential-work-arounds">Potential work-arounds?</a><ul><li><a href="#anova">ANOVA?</a></li><li><a href="#lmms">LMMs?</a></li></ul></li><li><a href="#thurstones-model">Thurstone’s model</a></li><li><a href="#ranks-as-pairs">Ranks as pairs</a></li><li><a href="#the-magic-of-normal">The magic of normal</a></li><li><a href="#references">References</a></li></ul></li></ul>
 
             </nav>
           </aside>
         
-        <h1 id="a-tutorial-on-analyzing-ranking-data">A tutorial on analyzing ranking data</h1>
-<p>July 2024</p>
-
-<h1 id="ranking-data">Ranking data</h1>
+        <h1 id="ranking-data">Ranking data</h1>
 
 <p>Ranking data are common in survey-based research. Ranking data arise
 from survey questions in which a respondent is asked to rank a set of
@@ -337,8 +334,8 @@ questions involve differences among populations of interest or
 covariates that could drive different rankings. This post is meant to
 act as a guide for graduate-level readers and above, with code for
 fitting the popular Thurstone Case V model with the potential for
-covariates using R package <code class="language-plaintext highlighter-rouge">lavaan</code> <a class="citation" href="#lavaan">(Rosseel, 2012)</a>. I include some of
-the mathematical details for interested readers, but I point to recently
+covariates using R package <a class="citation" href="#lavaan">(Rosseel, 2012)</a>. I include some of the
+mathematical details for interested readers, but I point to recently
 developed R packages (shamelessly promoting one I am developing as well)
 that do not require understanding of all the nuts and bolts.</p>
 
@@ -392,16 +389,9 @@ representative samples of the populations of interest.</p>
       <td style="text-align: left">hikers</td>
     </tr>
     <tr>
-      <td style="text-align: right">3</td>
       <td style="text-align: right">1</td>
       <td style="text-align: right">2</td>
-      <td style="text-align: right">4</td>
-      <td style="text-align: left">hikers</td>
-    </tr>
-    <tr>
       <td style="text-align: right">3</td>
-      <td style="text-align: right">1</td>
-      <td style="text-align: right">2</td>
       <td style="text-align: right">4</td>
       <td style="text-align: left">hikers</td>
     </tr>
@@ -409,6 +399,13 @@ representative samples of the populations of interest.</p>
       <td style="text-align: right">1</td>
       <td style="text-align: right">3</td>
       <td style="text-align: right">2</td>
+      <td style="text-align: right">4</td>
+      <td style="text-align: left">hikers</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">3</td>
+      <td style="text-align: right">2</td>
+      <td style="text-align: right">1</td>
       <td style="text-align: right">4</td>
       <td style="text-align: left">hikers</td>
     </tr>
@@ -481,7 +478,7 @@ decisions, caution may be warranted. Alternatively, one may want
 confidence intervals that are as tight as they can be and still be
 valid. In this case, one may argue that we have tools to account for
 correlated errors and that a linear mixed model with an unstructured
-correlation matrix (see, for example, <code class="language-plaintext highlighter-rouge">?nlme::corStruct()</code> (missing reference)) to model the correlation of the errors within a respondent may be a
+correlation matrix (see, for example, <code class="language-plaintext highlighter-rouge">?nlme::corStruct()</code> <a class="citation" href="#nlme">(Pinheiro et al., 2024)</a>) to model the correlation of the errors within a respondent may be a
 good option. Furthermore, one could concoct a model to address the
 research question above using factors for the group to which the
 respondent belongs and the item being ranked, as well as the interaction
@@ -530,12 +527,97 @@ sample of respondents to rank a set of items in terms of the target of
 the research (e.g., least to most preferred). The Thurstone models then
 assume that, if a certain person is presented with items \(1,2,...,K\),
 then they will have a realized vector of utilities
-\({\bf u} = (u_1, u_2, ..., u_K)^\top\).</p>
+\({\bf u} = (u_1, u_2, ..., u_K)^\top\) that are draws from the utility
+distributions (Figure <a href="#fig:concept-fig">1</a>). For brevity, I
+will denote \({\bf U}\) the random vector of utilities and denote
+\(f_{U}({\bf u})\) the joint probability density function. Now, assume
+the respondent internally orders the elements of the vector \({\bf u}\)
+in terms of the size, then responds with the rank orders. For example,
+assume \(u_2 &lt; u_1 &lt; u_4 &lt; u_3\) (note that we need not worry about
+equivalency because these are continuous random variables, so
+\(P(u_j = u_k) = 0\) for any \(j \ne k\)). With this ordering, the
+response for items 1 – 4 would read as follows:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: right">item 1</th>
+      <th style="text-align: right">item 2</th>
+      <th style="text-align: right">item 3</th>
+      <th style="text-align: right">item 4</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: right">2</td>
+      <td style="text-align: right">1</td>
+      <td style="text-align: right">4</td>
+      <td style="text-align: right">3</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Figure <a href="#fig:concept-fig">1</a> depicts this scenario. Notice
+how the spacing between the elements of \(\bf u\) is not reflected in
+the rank data, only their order in terms of utility. So, how do we begin
+to understand the spacing between the means of these utility
+distributions?</p>
+
+<div class="figure" style="text-align: center">
+
+<img src="/assets/images/thurstone_blog/densities_final.png" alt="Conceptual figure of the Thurstone model following the example given in the text." width="60%" />
+<p class="caption">
+<span id="fig:concept-fig"></span>Figure 1: Conceptual figure of the
+Thurstone model following the example given in the text.
+</p>
+
+</div>
+
+<h2 id="ranks-as-pairs">Ranks as pairs</h2>
+
+<p>In order to fit Thurstone models, we transform the ranking data into
+<em>pairs data</em> by listing all possible pairs of items, which is
+\(K\choose{2}\) for \(K\) items. The new variables take the form</p>
+
+\[y_{i,jk} = \begin{cases}
+1 &amp;  r_j &lt; r_k\\
+0 &amp; \text{otherwise}
+\end{cases}\]
+
+<p>where \(r_j\) is the rank given to item \(j\) such that \(y_{i,jk}\) is
+an indicator variable indicating whether respondent \(i\) ranked item
+\(j\) before (as in a smaller integer, which could mean higher priority
+depending on the question) item \(k\). Thus, the mean of these
+indicators, \({\bar y}_{jk} = \frac{1}{n}\sum_{i=1}^n y_{i,jk}\), is an
+estimator for</p>
+
+\[P(R_j &lt; R_k) = P(U_j &lt; U_k) = P(U_j - U_k &lt; 0)\]
+
+<p>where I am using capital letters to distinguish these random variables
+from <em>realizations</em> of the random variables as above. Notice here that
+we side-step the issue of not being able to measure \({\bf u}\) by
+focusing on estimating the probability that a given item is ranked
+before another. This probability depends on the <em>difference</em> between the
+utilities rather than a measure of the utilities themselves. This also
+gets us closer to estimating the quantities of interest; namely, the
+probabilities of specific <em>rankings</em>, such as
+\(P(U_2 &lt; U_1 &lt; U_4 &lt; U_3)\).</p>
+
+<h2 id="the-magic-of-normal">The magic of normal</h2>
+
+<p>While transforming the rank data to pairs data got us closer to
+estimating the probabilities of certain rankings, we can’t actually go
+from paired probabilities, that is \(P(U_j &lt; U_k)\) for all pairs of
+\(j \ne k\), to the probability of a specific ordering of the elements
+of \(\bf U\) without knowing something more about the joint distribution
+of the \(U\)’s, \(f_U({\bf u})\).</p>
 
 <h2 id="references">References</h2>
 
 <ol class="bibliography"><li><span id="maydeu-olivares_SEM_2005">Maydeu-Olivares, A., &amp; Böckenholt, U. (2005). Structural Equation Modeling of Paired-Comparison and Ranking Data. <i>Psychological Methods</i>, <i>10</i>(3), 285–304. https://doi.org/10.1037/1082-989X.10.3.285</span></li>
-<li><span id="lavaan">Rosseel, Y. (2012). lavaan: An R Package for Structural Equation Modeling. <i>Journal of Statistical Software</i>, <i>48</i>(2), 1–36. https://doi.org/10.18637/jss.v048.i02</span></li></ol>
+<li><span id="nlme">Pinheiro, J., Bates, D., &amp; R Core Team. (2024). <i>nlme: Linear and Nonlinear Mixed Effects Models</i>. https://CRAN.R-project.org/package=nlme</span></li>
+<li><span id="lavaan">Rosseel, Y. (2012). lavaan: An R Package for Structural Equation Modeling. <i>Journal of Statistical Software</i>, <i>48</i>(2), 1–36. https://doi.org/10.18637/jss.v048.i02</span></li>
+<li><span id="thurstone_wiki">Wikipedia contributors. (2024). <i>Thurstone scale — Wikipedia, The Free Encyclopedia</i>. https://en.wikipedia.org/w/index.php?title=Thurstone_scale&amp;oldid=1218530864</span></li></ol>
 
 <div class="footnotes" role="doc-endnotes">
   <ol>

@@ -16,7 +16,7 @@ output:
 
 # Ranking data
 
-Ranking data are common in survey-based research. Ranking data arise from survey questions in which a respondent is asked to rank a set of items by their priority or preference in the view of the respondent. I have recently encountered this type of data in my consulting practice and discovered that there is a relative paucity of approachable material available on analyzing these data, particularly when the research questions involve differences among populations of interest or covariates that could drive different rankings. This post is meant to act as a guide for graduate-level readers and above, with code for fitting the popular Thurstone Case V model with the potential for covariates using R package `lavaan` {% cite lavaan %}. I include some of the mathematical details for interested readers, but I point to recently developed R packages (shamelessly promoting one I am developing as well) that do not require understanding of all the nuts and bolts.
+Ranking data are common in survey-based research. Ranking data arise from survey questions in which a respondent is asked to rank a set of items by their priority or preference in the view of the respondent. I have recently encountered this type of data in my consulting practice and discovered that there is a relative paucity of approachable material available on analyzing these data, particularly when the research questions involve differences among populations of interest or covariates that could drive different rankings. This post is meant to act as a guide for graduate-level readers and above, with code for fitting the popular Thurstone Case V model with the potential for covariates using R package {% cite lavaan %}. I include some of the mathematical details for interested readers, but I point to recently developed R packages (shamelessly promoting one I am developing as well) that do not require understanding of all the nuts and bolts.
 
 > **Important note**: I am not a social scientist! I do not pretend to know or understand the human psychology and social science underpinning the development of these approaches. To any social scientists out there, please forgive any inaccuracies in that realm.
 
@@ -92,13 +92,93 @@ As an extreme example, consider the case where I am asked to rank the foods ice 
 Louis Leon Thurstone was an early pioneer in psychology and psychometrics. He helped develop many analytical approaches still commonly used in practice today, including factor analysis. In fact, the Thurstone case V model that this post is about is a special case of confirmatory factor analysis. Thurstone conceptualized his models assuming that a person's view or opinion of an item they are presented with in a survey is on a continuum, a scale that he called the *utility scale*. In other words, the item holds a certain *utility*^[*Utility* seems very, well, utilitarian to me. I would suggest that *value* might be better terminology for this day and age.] to a person that is not on a 1-5 or 1-10 integer scale as we often present in a survey. Similarly, if the same item is presented to a population of people, the utilities for these people should represent a distribution of utilities.
 
 
-Unfortunately, we have no way to measure the utility an item holds for a person, but we can get a sense of utility distributions relative to one another for a population of interest. We do this by asking a random sample of respondents to rank a set of items in terms of the target of the research (e.g., least to most preferred). The Thurstone models then assume that, if a certain person is presented with items $$1,2,...,K$$, then they will have a realized vector of utilities $${\bf u} = (u_1, u_2, ..., u_K)^\top$$.
+Unfortunately, we have no way to measure the utility an item holds for a person, but we can get a sense of utility distributions relative to one another for a population of interest. We do this by asking a random sample of respondents to rank a set of items in terms of the target of the research (e.g., least to most preferred). The Thurstone models then assume that, if a certain person is presented with items $$1,2,...,K$$, then they will have a realized vector of utilities $${\bf u} = (u_1, u_2, ..., u_K)^\top$$ that are draws from the utility distributions (Figure \@ref(fig:concept-fig)). For brevity, I will denote $${\bf U}$$ the random vector of utilities and denote $$f_{U}({\bf u})$$ the joint probability density function. Now, assume the respondent internally orders the elements of the vector $${\bf u}$$ in terms of the size, then responds with the rank orders. For example, assume $$u_2 < u_1 < u_4 < u_3$$ (note that we need not worry about equivalency because these are continuous random variables, so $$P(u_j = u_k) = 0$$ for any $j \ne k$). With this ordering, the response for items 1 -- 4 would read as follows:
+
+```{r echo=FALSE}
+data.frame(
+  "item1" = 2,
+  "item2" = 1,
+  "item3" = 4,
+  "item4" = 3
+) |> kableExtra::kable(
+  format = "simple",
+  col.names = paste("item", 1:4)
+)
+```
+
+Figure \@ref(fig:concept-fig) depicts this scenario. Notice how the spacing between the elements of $$\bf u$$ is not reflected in the rank data, only their order in terms of utility. So, how do we begin to understand the spacing between the means of these utility distributions?
+
+```{r include=FALSE, eval=FALSE}
+library(ggplot2)
+x <- seq(-5, 5, length.out = 500)
+df_concept_plot <- data.frame(
+  x = rep(x, 4),
+  y = c(
+    dnorm(x, -2),
+    dnorm(x, -1.5),
+    dnorm(x, 0),
+    dnorm(x, 2)
+  ),
+  group = factor(rep(1:4, each = 500))
+)
+densities <- ggplot(df_concept_plot, aes(x, y, color = group)) +
+  geom_line(linewidth = 1.5) +
+  theme_classic() +
+  theme(
+    axis.text = element_blank(),
+    axis.line.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.y = element_blank(),
+    legend.position = "none"
+  ) +
+  scale_color_manual(values = PNWColors::pnw_palette("Moth", 6)[1:4]) +
+  xlab("")
+
+ggsave(
+  here::here("assets/images/thurstone_blog/densities_raw.png"),
+  densities,
+  width = 4, height = 2, units = "in",
+  dpi = 300
+)
+
+```
+
+```{r concept-fig, echo=FALSE, out.width="60%", fig.cap="Conceptual figure of the Thurstone model following the example given in the text.", fig.align="center"}
+knitr::include_graphics(
+  here::here("assets/images/thurstone_blog/densities_final.png")
+)
+```
+
+## Ranks as pairs
+
+In order to fit Thurstone models, we transform the ranking data into *pairs data* by listing all possible pairs of items, which is $$K\choose{2}$$ for $$K$$ items. The new variables take the form
+
+$$
+y_{i,jk} = \begin{cases}
+1 &  r_j < r_k\\
+0 & \text{otherwise}
+\end{cases}
+$$
+
+where $$r_j$$ is the rank given to item $$j$$ such that $$y_{i,jk}$$ is an indicator variable indicating whether respondent $$i$$ ranked item $$j$$ before (as in a smaller integer, which could mean higher priority depending on the question) item $$k$$. Thus, the mean of these indicators, $${\bar y}_{jk} = \frac{1}{n}\sum_{i=1}^n y_{i,jk}$$, is an estimator for 
+
+$$
+P(R_j < R_k) = P(U_j < U_k) = P(U_j - U_k < 0)
+$$
+
+where I am using capital letters to distinguish these random variables from *realizations* of the random variables as above. Notice here that we side-step the issue of not being able to measure $${\bf u}$$ by focusing on estimating the probability that a given item is ranked before another. This probability depends on the *difference* between the utilities rather than a measure of the utilities themselves. This also gets us closer to estimating the quantities of interest; namely, the probabilities of specific *rankings*, such as $$P(U_2 < U_1 < U_4 < U_3)$$.
+
+## The magic of normal
+
+While transforming the rank data to pairs data got us closer to estimating the probabilities of certain rankings, we can't actually go from paired probabilities, that is $$P(U_j < U_k)$$ for all pairs of $$j \ne k$$, to the probability of a specific ordering of the elements of $$\bf U$$ without knowing something more about the joint distribution of the $$U$$'s, $$f_U({\bf u})$$.
+
+
 
 
 
 ## References
 
-{% bibliography --file references_ranking_data_blog.bib %}
+{% bibliography -f references_ranking_data_blog.bib %}
 
 
 

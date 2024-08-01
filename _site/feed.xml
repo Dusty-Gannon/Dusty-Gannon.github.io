@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.3">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2024-07-30T17:17:40-07:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Dusty Gannon</title><subtitle>Website and blog for Dusty Gannon, statistical consultant and ecologist.</subtitle><author><name>Dusty Gannon</name></author><entry><title type="html">A tutorial on analyzing ranking data</title><link href="http://localhost:4000/common/issues/thurstone_tutorial/" rel="alternate" type="text/html" title="A tutorial on analyzing ranking data" /><published>2024-07-01T00:00:00-07:00</published><updated>2024-07-01T00:00:00-07:00</updated><id>http://localhost:4000/common/issues/thurstone_tutorial</id><content type="html" xml:base="http://localhost:4000/common/issues/thurstone_tutorial/"># Ranking data
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.3">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2024-07-31T18:02:04-07:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Dusty Gannon</title><subtitle>Website and blog for Dusty Gannon, statistical consultant and ecologist.</subtitle><author><name>Dusty Gannon</name></author><entry><title type="html">A tutorial on analyzing ranking data</title><link href="http://localhost:4000/common/issues/thurstone_tutorial/" rel="alternate" type="text/html" title="A tutorial on analyzing ranking data" /><published>2024-07-01T00:00:00-07:00</published><updated>2024-07-01T00:00:00-07:00</updated><id>http://localhost:4000/common/issues/thurstone_tutorial</id><content type="html" xml:base="http://localhost:4000/common/issues/thurstone_tutorial/"># Ranking data
 
-Ranking data are common in survey-based research. Ranking data arise from survey questions in which a respondent is asked to rank a set of items by their priority or preference in the view of the respondent. I have recently encountered this type of data in my consulting practice and discovered that there is a relative paucity of approachable material available on analyzing these data, particularly when the research questions involve differences among populations of interest or covariates that could drive different rankings. This post is meant to act as a guide for graduate-level readers and above, with code for fitting the popular Thurstone Case V model with the potential for covariates using R package `lavaan` &lt;a class=&quot;citation&quot; href=&quot;#lavaan&quot;&gt;(Rosseel, 2012)&lt;/a&gt;. I include some of the mathematical details for interested readers, but I point to recently developed R packages (shamelessly promoting one I am developing as well) that do not require understanding of all the nuts and bolts.
+Ranking data are common in survey-based research. Ranking data arise from survey questions in which a respondent is asked to rank a set of items by their priority or preference in the view of the respondent. I have recently encountered this type of data in my consulting practice and discovered that there is a relative paucity of approachable material available on analyzing these data, particularly when the research questions involve differences among populations of interest or covariates that could drive different rankings. This post is meant to act as a guide for graduate-level readers and above, with code for fitting the popular Thurstone Case V model with the potential for covariates using R package &lt;a class=&quot;citation&quot; href=&quot;#lavaan&quot;&gt;(Rosseel, 2012)&lt;/a&gt;. I include some of the mathematical details for interested readers, but I point to recently developed R packages (shamelessly promoting one I am developing as well) that do not require understanding of all the nuts and bolts.
 
 &gt; **Important note**: I am not a social scientist! I do not pretend to know or understand the human psychology and social science underpinning the development of these approaches. To any social scientists out there, please forgive any inaccuracies in that realm.
 
@@ -67,7 +67,7 @@ In a simpler situation than our example above in which the question is simply *i
 
 ### LMMs?
 
-Indeed, an overly conservative analysis may not be much of a concern in some cases. For example, if the goal is to inform policy or management decisions, caution may be warranted. Alternatively, one may want confidence intervals that are as tight as they can be and still be valid. In this case, one may argue that we have tools to account for correlated errors and that a linear mixed model with an unstructured correlation matrix (see, for example, `?nlme::corStruct()` (missing reference)) to model the correlation of the errors within a respondent may be a good option. Furthermore, one could concoct a model to address the research question above using factors for the group to which the respondent belongs and the item being ranked, as well as the interaction between the two factors. This very well might be a reasonable approach, *particularly if the sample sizes are large and the mean ranks don't get too close to the bounds of 1 and* $$K$$. Otherwise, due to the bounds on the support of the response variable, residuals plots may commonly look like Figure \@ref(fig:bad-resids), and an appeal to the CLT may not be justified. **However**, there is one additional problem with this approach that is more philosophical than it is technically a statistical issue. Namely, is it really a good idea to say that the difference between a rank of 1 and 2 is the same as the difference between ranks 2 and 3? This is what we are implying by treating the ranks as integer values in the approaches discussed thus far, but I would argue that this seems to me to like it would rarely be a good idea.
+Indeed, an overly conservative analysis may not be much of a concern in some cases. For example, if the goal is to inform policy or management decisions, caution may be warranted. Alternatively, one may want confidence intervals that are as tight as they can be and still be valid. In this case, one may argue that we have tools to account for correlated errors and that a linear mixed model with an unstructured correlation matrix (see, for example, `?nlme::corStruct()` &lt;a class=&quot;citation&quot; href=&quot;#nlme&quot;&gt;(Pinheiro et al., 2024)&lt;/a&gt;) to model the correlation of the errors within a respondent may be a good option. Furthermore, one could concoct a model to address the research question above using factors for the group to which the respondent belongs and the item being ranked, as well as the interaction between the two factors. This very well might be a reasonable approach, *particularly if the sample sizes are large and the mean ranks don't get too close to the bounds of 1 and* $$K$$. Otherwise, due to the bounds on the support of the response variable, residuals plots may commonly look like Figure \@ref(fig:bad-resids), and an appeal to the CLT may not be justified. **However**, there is one additional problem with this approach that is more philosophical than it is technically a statistical issue. Namely, is it really a good idea to say that the difference between a rank of 1 and 2 is the same as the difference between ranks 2 and 3? This is what we are implying by treating the ranks as integer values in the approaches discussed thus far, but I would argue that this seems to me to like it would rarely be a good idea.
 
 As an extreme example, consider the case where I am asked to rank the foods ice cream (`r emoji::emoji(&quot;icecream&quot;)`), pie (`r emoji::emoji(&quot;pie&quot;)`), and broccoli (`r emoji::emoji(&quot;broccoli&quot;)`) in terms of what I want for dessert tonight. If I give these items ranks $$\{1,2,3\}$$, is it reasonable to think that my preference for ice cream over pie is of the same magnitude as my preference for pie over broccoli!? Don't get me wrong, I love broccoli, but for dessert, pie and ice cream are *way* better. The models discussed below handle all of these issues quite elegantly.
 
@@ -76,7 +76,87 @@ As an extreme example, consider the case where I am asked to rank the foods ice 
 Louis Leon Thurstone was an early pioneer in psychology and psychometrics. He helped develop many analytical approaches still commonly used in practice today, including factor analysis. In fact, the Thurstone case V model that this post is about is a special case of confirmatory factor analysis. Thurstone conceptualized his models assuming that a person's view or opinion of an item they are presented with in a survey is on a continuum, a scale that he called the *utility scale*. In other words, the item holds a certain *utility*^[*Utility* seems very, well, utilitarian to me. I would suggest that *value* might be better terminology for this day and age.] to a person that is not on a 1-5 or 1-10 integer scale as we often present in a survey. Similarly, if the same item is presented to a population of people, the utilities for these people should represent a distribution of utilities.
 
 
-Unfortunately, we have no way to measure the utility an item holds for a person, but we can get a sense of utility distributions relative to one another for a population of interest. We do this by asking a random sample of respondents to rank a set of items in terms of the target of the research (e.g., least to most preferred). The Thurstone models then assume that, if a certain person is presented with items $$1,2,...,K$$, then they will have a realized vector of utilities $${\bf u} = (u_1, u_2, ..., u_K)^\top$$.
+Unfortunately, we have no way to measure the utility an item holds for a person, but we can get a sense of utility distributions relative to one another for a population of interest. We do this by asking a random sample of respondents to rank a set of items in terms of the target of the research (e.g., least to most preferred). The Thurstone models then assume that, if a certain person is presented with items $$1,2,...,K$$, then they will have a realized vector of utilities $${\bf u} = (u_1, u_2, ..., u_K)^\top$$ that are draws from the utility distributions (Figure \@ref(fig:concept-fig)). For brevity, I will denote $${\bf U}$$ the random vector of utilities and denote $$f_{U}({\bf u})$$ the joint probability density function. Now, assume the respondent internally orders the elements of the vector $${\bf u}$$ in terms of the size, then responds with the rank orders. For example, assume $$u_2 &lt; u_1 &lt; u_4 &lt; u_3$$ (note that we need not worry about equivalency because these are continuous random variables, so $$P(u_j = u_k) = 0$$ for any $j \ne k$). With this ordering, the response for items 1 -- 4 would read as follows:
+
+```{r echo=FALSE}
+data.frame(
+  &quot;item1&quot; = 2,
+  &quot;item2&quot; = 1,
+  &quot;item3&quot; = 4,
+  &quot;item4&quot; = 3
+) |&gt; kableExtra::kable(
+  format = &quot;simple&quot;,
+  col.names = paste(&quot;item&quot;, 1:4)
+)
+```
+
+Figure \@ref(fig:concept-fig) depicts this scenario. Notice how the spacing between the elements of $$\bf u$$ is not reflected in the rank data, only their order in terms of utility. So, how do we begin to understand the spacing between the means of these utility distributions?
+
+```{r include=FALSE, eval=FALSE}
+library(ggplot2)
+x &lt;- seq(-5, 5, length.out = 500)
+df_concept_plot &lt;- data.frame(
+  x = rep(x, 4),
+  y = c(
+    dnorm(x, -2),
+    dnorm(x, -1.5),
+    dnorm(x, 0),
+    dnorm(x, 2)
+  ),
+  group = factor(rep(1:4, each = 500))
+)
+densities &lt;- ggplot(df_concept_plot, aes(x, y, color = group)) +
+  geom_line(linewidth = 1.5) +
+  theme_classic() +
+  theme(
+    axis.text = element_blank(),
+    axis.line.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.y = element_blank(),
+    legend.position = &quot;none&quot;
+  ) +
+  scale_color_manual(values = PNWColors::pnw_palette(&quot;Moth&quot;, 6)[1:4]) +
+  xlab(&quot;&quot;)
+
+ggsave(
+  here::here(&quot;assets/images/thurstone_blog/densities_raw.png&quot;),
+  densities,
+  width = 4, height = 2, units = &quot;in&quot;,
+  dpi = 300
+)
+
+```
+
+```{r concept-fig, echo=FALSE, out.width=&quot;60%&quot;, fig.cap=&quot;Conceptual figure of the Thurstone model following the example given in the text.&quot;, fig.align=&quot;center&quot;}
+knitr::include_graphics(
+  here::here(&quot;assets/images/thurstone_blog/densities_final.png&quot;)
+)
+```
+
+## Ranks as pairs
+
+In order to fit Thurstone models, we transform the ranking data into *pairs data* by listing all possible pairs of items, which is $$K\choose{2}$$ for $$K$$ items. The new variables take the form
+
+$$
+y_{i,jk} = \begin{cases}
+1 &amp;  r_j &lt; r_k\\
+0 &amp; \text{otherwise}
+\end{cases}
+$$
+
+where $$r_j$$ is the rank given to item $$j$$ such that $$y_{i,jk}$$ is an indicator variable indicating whether respondent $$i$$ ranked item $$j$$ before (as in a smaller integer, which could mean higher priority depending on the question) item $$k$$. Thus, the mean of these indicators, $${\bar y}_{jk} = \frac{1}{n}\sum_{i=1}^n y_{i,jk}$$, is an estimator for 
+
+$$
+P(R_j &lt; R_k) = P(U_j &lt; U_k) = P(U_j - U_k &lt; 0)
+$$
+
+where I am using capital letters to distinguish these random variables from *realizations* of the random variables as above. Notice here that we side-step the issue of not being able to measure $${\bf u}$$ by focusing on estimating the probability that a given item is ranked before another. This probability depends on the *difference* between the utilities rather than a measure of the utilities themselves. This also gets us closer to estimating the quantities of interest; namely, the probabilities of specific *rankings*, such as $$P(U_2 &lt; U_1 &lt; U_4 &lt; U_3)$$.
+
+## The magic of normal
+
+While transforming the rank data to pairs data got us closer to estimating the probabilities of certain rankings, we can't actually go from paired probabilities, that is $$P(U_j &lt; U_k)$$ for all pairs of $$j \ne k$$, to the probability of a specific ordering of the elements of $$\bf U$$ without knowing something more about the joint distribution of the $$U$$'s, $$f_U({\bf u})$$.
+
+
 
 
 
@@ -85,10 +165,7 @@ Unfortunately, we have no way to measure the utility an item holds for a person,
 &lt;ol class=&quot;bibliography&quot;&gt;&lt;li&gt;&lt;span id=&quot;maydeu-olivares_SEM_2005&quot;&gt;Maydeu-Olivares, A., &amp;amp; Böckenholt, U. (2005). Structural Equation Modeling of Paired-Comparison and Ranking Data. &lt;i&gt;Psychological Methods&lt;/i&gt;, &lt;i&gt;10&lt;/i&gt;(3), 285–304. https://doi.org/10.1037/1082-989X.10.3.285&lt;/span&gt;&lt;/li&gt;
 &lt;li&gt;&lt;span id=&quot;nlme&quot;&gt;Pinheiro, J., Bates, D., &amp;amp; R Core Team. (2024). &lt;i&gt;nlme: Linear and Nonlinear Mixed Effects Models&lt;/i&gt;. https://CRAN.R-project.org/package=nlme&lt;/span&gt;&lt;/li&gt;
 &lt;li&gt;&lt;span id=&quot;lavaan&quot;&gt;Rosseel, Y. (2012). lavaan: An R Package for Structural Equation Modeling. &lt;i&gt;Journal of Statistical Software&lt;/i&gt;, &lt;i&gt;48&lt;/i&gt;(2), 1–36. https://doi.org/10.18637/jss.v048.i02&lt;/span&gt;&lt;/li&gt;
-&lt;li&gt;&lt;span id=&quot;thurstone_wiki&quot;&gt;Wikipedia contributors. (2024). &lt;i&gt;Thurstone scale — Wikipedia, The Free Encyclopedia&lt;/i&gt;. https://en.wikipedia.org/w/index.php?title=Thurstone_scale&amp;oldid=1218530864&lt;/span&gt;&lt;/li&gt;&lt;/ol&gt;</content><author><name>Dusty Gannon</name></author><category term="Common" /><category term="issues" /><summary type="html"># Ranking data</summary></entry><entry><title type="html">A tutorial on analyzing ranking data</title><link href="http://localhost:4000/common/issues/thurstone_tutorial/" rel="alternate" type="text/html" title="A tutorial on analyzing ranking data" /><published>2024-07-01T00:00:00-07:00</published><updated>2024-07-01T00:00:00-07:00</updated><id>http://localhost:4000/common/issues/thurstone_tutorial</id><content type="html" xml:base="http://localhost:4000/common/issues/thurstone_tutorial/">&lt;h1 id=&quot;a-tutorial-on-analyzing-ranking-data&quot;&gt;A tutorial on analyzing ranking data&lt;/h1&gt;
-&lt;p&gt;July 2024&lt;/p&gt;
-
-&lt;h1 id=&quot;ranking-data&quot;&gt;Ranking data&lt;/h1&gt;
+&lt;li&gt;&lt;span id=&quot;thurstone_wiki&quot;&gt;Wikipedia contributors. (2024). &lt;i&gt;Thurstone scale — Wikipedia, The Free Encyclopedia&lt;/i&gt;. https://en.wikipedia.org/w/index.php?title=Thurstone_scale&amp;oldid=1218530864&lt;/span&gt;&lt;/li&gt;&lt;/ol&gt;</content><author><name>Dusty Gannon</name></author><category term="Common" /><category term="issues" /><summary type="html"># Ranking data</summary></entry><entry><title type="html">A tutorial on analyzing ranking data</title><link href="http://localhost:4000/common/issues/thurstone_tutorial/" rel="alternate" type="text/html" title="A tutorial on analyzing ranking data" /><published>2024-07-01T00:00:00-07:00</published><updated>2024-07-01T00:00:00-07:00</updated><id>http://localhost:4000/common/issues/thurstone_tutorial</id><content type="html" xml:base="http://localhost:4000/common/issues/thurstone_tutorial/">&lt;h1 id=&quot;ranking-data&quot;&gt;Ranking data&lt;/h1&gt;
 
 &lt;p&gt;Ranking data are common in survey-based research. Ranking data arise
 from survey questions in which a respondent is asked to rank a set of
@@ -100,8 +177,8 @@ questions involve differences among populations of interest or
 covariates that could drive different rankings. This post is meant to
 act as a guide for graduate-level readers and above, with code for
 fitting the popular Thurstone Case V model with the potential for
-covariates using R package &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;lavaan&lt;/code&gt; &lt;a class=&quot;citation&quot; href=&quot;#lavaan&quot;&gt;(Rosseel, 2012)&lt;/a&gt;. I include some of
-the mathematical details for interested readers, but I point to recently
+covariates using R package &lt;a class=&quot;citation&quot; href=&quot;#lavaan&quot;&gt;(Rosseel, 2012)&lt;/a&gt;. I include some of the
+mathematical details for interested readers, but I point to recently
 developed R packages (shamelessly promoting one I am developing as well)
 that do not require understanding of all the nuts and bolts.&lt;/p&gt;
 
@@ -155,16 +232,9 @@ representative samples of the populations of interest.&lt;/p&gt;
       &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
-      &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
       &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
     &lt;/tr&gt;
@@ -172,6 +242,13 @@ representative samples of the populations of interest.&lt;/p&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
       &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
     &lt;/tr&gt;
@@ -244,7 +321,7 @@ decisions, caution may be warranted. Alternatively, one may want
 confidence intervals that are as tight as they can be and still be
 valid. In this case, one may argue that we have tools to account for
 correlated errors and that a linear mixed model with an unstructured
-correlation matrix (see, for example, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;?nlme::corStruct()&lt;/code&gt; (missing reference)) to model the correlation of the errors within a respondent may be a
+correlation matrix (see, for example, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;?nlme::corStruct()&lt;/code&gt; &lt;a class=&quot;citation&quot; href=&quot;#nlme&quot;&gt;(Pinheiro et al., 2024)&lt;/a&gt;) to model the correlation of the errors within a respondent may be a
 good option. Furthermore, one could concoct a model to address the
 research question above using factors for the group to which the
 respondent belongs and the item being ranked, as well as the interaction
@@ -293,12 +370,97 @@ sample of respondents to rank a set of items in terms of the target of
 the research (e.g., least to most preferred). The Thurstone models then
 assume that, if a certain person is presented with items \(1,2,...,K\),
 then they will have a realized vector of utilities
-\({\bf u} = (u_1, u_2, ..., u_K)^\top\).&lt;/p&gt;
+\({\bf u} = (u_1, u_2, ..., u_K)^\top\) that are draws from the utility
+distributions (Figure &lt;a href=&quot;#fig:concept-fig&quot;&gt;1&lt;/a&gt;). For brevity, I
+will denote \({\bf U}\) the random vector of utilities and denote
+\(f_{U}({\bf u})\) the joint probability density function. Now, assume
+the respondent internally orders the elements of the vector \({\bf u}\)
+in terms of the size, then responds with the rank orders. For example,
+assume \(u_2 &amp;lt; u_1 &amp;lt; u_4 &amp;lt; u_3\) (note that we need not worry about
+equivalency because these are continuous random variables, so
+\(P(u_j = u_k) = 0\) for any \(j \ne k\)). With this ordering, the
+response for items 1 – 4 would read as follows:&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: right&quot;&gt;item 1&lt;/th&gt;
+      &lt;th style=&quot;text-align: right&quot;&gt;item 2&lt;/th&gt;
+      &lt;th style=&quot;text-align: right&quot;&gt;item 3&lt;/th&gt;
+      &lt;th style=&quot;text-align: right&quot;&gt;item 4&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;Figure &lt;a href=&quot;#fig:concept-fig&quot;&gt;1&lt;/a&gt; depicts this scenario. Notice
+how the spacing between the elements of \(\bf u\) is not reflected in
+the rank data, only their order in terms of utility. So, how do we begin
+to understand the spacing between the means of these utility
+distributions?&lt;/p&gt;
+
+&lt;div class=&quot;figure&quot; style=&quot;text-align: center&quot;&gt;
+
+&lt;img src=&quot;/assets/images/thurstone_blog/densities_final.png&quot; alt=&quot;Conceptual figure of the Thurstone model following the example given in the text.&quot; width=&quot;60%&quot; /&gt;
+&lt;p class=&quot;caption&quot;&gt;
+&lt;span id=&quot;fig:concept-fig&quot;&gt;&lt;/span&gt;Figure 1: Conceptual figure of the
+Thurstone model following the example given in the text.
+&lt;/p&gt;
+
+&lt;/div&gt;
+
+&lt;h2 id=&quot;ranks-as-pairs&quot;&gt;Ranks as pairs&lt;/h2&gt;
+
+&lt;p&gt;In order to fit Thurstone models, we transform the ranking data into
+&lt;em&gt;pairs data&lt;/em&gt; by listing all possible pairs of items, which is
+\(K\choose{2}\) for \(K\) items. The new variables take the form&lt;/p&gt;
+
+\[y_{i,jk} = \begin{cases}
+1 &amp;amp;  r_j &amp;lt; r_k\\
+0 &amp;amp; \text{otherwise}
+\end{cases}\]
+
+&lt;p&gt;where \(r_j\) is the rank given to item \(j\) such that \(y_{i,jk}\) is
+an indicator variable indicating whether respondent \(i\) ranked item
+\(j\) before (as in a smaller integer, which could mean higher priority
+depending on the question) item \(k\). Thus, the mean of these
+indicators, \({\bar y}_{jk} = \frac{1}{n}\sum_{i=1}^n y_{i,jk}\), is an
+estimator for&lt;/p&gt;
+
+\[P(R_j &amp;lt; R_k) = P(U_j &amp;lt; U_k) = P(U_j - U_k &amp;lt; 0)\]
+
+&lt;p&gt;where I am using capital letters to distinguish these random variables
+from &lt;em&gt;realizations&lt;/em&gt; of the random variables as above. Notice here that
+we side-step the issue of not being able to measure \({\bf u}\) by
+focusing on estimating the probability that a given item is ranked
+before another. This probability depends on the &lt;em&gt;difference&lt;/em&gt; between the
+utilities rather than a measure of the utilities themselves. This also
+gets us closer to estimating the quantities of interest; namely, the
+probabilities of specific &lt;em&gt;rankings&lt;/em&gt;, such as
+\(P(U_2 &amp;lt; U_1 &amp;lt; U_4 &amp;lt; U_3)\).&lt;/p&gt;
+
+&lt;h2 id=&quot;the-magic-of-normal&quot;&gt;The magic of normal&lt;/h2&gt;
+
+&lt;p&gt;While transforming the rank data to pairs data got us closer to
+estimating the probabilities of certain rankings, we can’t actually go
+from paired probabilities, that is \(P(U_j &amp;lt; U_k)\) for all pairs of
+\(j \ne k\), to the probability of a specific ordering of the elements
+of \(\bf U\) without knowing something more about the joint distribution
+of the \(U\)’s, \(f_U({\bf u})\).&lt;/p&gt;
 
 &lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
 
 &lt;ol class=&quot;bibliography&quot;&gt;&lt;li&gt;&lt;span id=&quot;maydeu-olivares_SEM_2005&quot;&gt;Maydeu-Olivares, A., &amp;amp; Böckenholt, U. (2005). Structural Equation Modeling of Paired-Comparison and Ranking Data. &lt;i&gt;Psychological Methods&lt;/i&gt;, &lt;i&gt;10&lt;/i&gt;(3), 285–304. https://doi.org/10.1037/1082-989X.10.3.285&lt;/span&gt;&lt;/li&gt;
-&lt;li&gt;&lt;span id=&quot;lavaan&quot;&gt;Rosseel, Y. (2012). lavaan: An R Package for Structural Equation Modeling. &lt;i&gt;Journal of Statistical Software&lt;/i&gt;, &lt;i&gt;48&lt;/i&gt;(2), 1–36. https://doi.org/10.18637/jss.v048.i02&lt;/span&gt;&lt;/li&gt;&lt;/ol&gt;
+&lt;li&gt;&lt;span id=&quot;nlme&quot;&gt;Pinheiro, J., Bates, D., &amp;amp; R Core Team. (2024). &lt;i&gt;nlme: Linear and Nonlinear Mixed Effects Models&lt;/i&gt;. https://CRAN.R-project.org/package=nlme&lt;/span&gt;&lt;/li&gt;
+&lt;li&gt;&lt;span id=&quot;lavaan&quot;&gt;Rosseel, Y. (2012). lavaan: An R Package for Structural Equation Modeling. &lt;i&gt;Journal of Statistical Software&lt;/i&gt;, &lt;i&gt;48&lt;/i&gt;(2), 1–36. https://doi.org/10.18637/jss.v048.i02&lt;/span&gt;&lt;/li&gt;
+&lt;li&gt;&lt;span id=&quot;thurstone_wiki&quot;&gt;Wikipedia contributors. (2024). &lt;i&gt;Thurstone scale — Wikipedia, The Free Encyclopedia&lt;/i&gt;. https://en.wikipedia.org/w/index.php?title=Thurstone_scale&amp;amp;oldid=1218530864&lt;/span&gt;&lt;/li&gt;&lt;/ol&gt;
 
 &lt;div class=&quot;footnotes&quot; role=&quot;doc-endnotes&quot;&gt;
   &lt;ol&gt;
@@ -307,4 +469,4 @@ then they will have a realized vector of utilities
 that &lt;em&gt;value&lt;/em&gt; might be better terminology for this day and age. &lt;a href=&quot;#fnref:1&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
     &lt;/li&gt;
   &lt;/ol&gt;
-&lt;/div&gt;</content><author><name>Dusty Gannon</name></author><category term="Common" /><category term="issues" /><summary type="html">A tutorial on analyzing ranking data July 2024</summary></entry></feed>
+&lt;/div&gt;</content><author><name>Dusty Gannon</name></author><category term="Common" /><category term="issues" /><summary type="html">Ranking data</summary></entry></feed>

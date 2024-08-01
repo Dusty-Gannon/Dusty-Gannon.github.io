@@ -13,10 +13,6 @@ output:
     preserve_yaml: true
 ---
 
-A tutorial on analyzing ranking data
-================
-July 2024
-
 
 # Ranking data
 
@@ -30,8 +26,8 @@ questions involve differences among populations of interest or
 covariates that could drive different rankings. This post is meant to
 act as a guide for graduate-level readers and above, with code for
 fitting the popular Thurstone Case V model with the potential for
-covariates using R package `lavaan` {% cite lavaan %}. I include some of
-the mathematical details for interested readers, but I point to recently
+covariates using R package {% cite lavaan %}. I include some of the
+mathematical details for interested readers, but I point to recently
 developed R packages (shamelessly promoting one I am developing as well)
 that do not require understanding of all the nuts and bolts.
 
@@ -61,9 +57,9 @@ representative samples of the populations of interest.
 |------------------:|-------------------:|----------------------------:|----------------:|:-------|
 |                 3 |                  1 |                           2 |               4 | hikers |
 |                 3 |                  1 |                           2 |               4 | hikers |
-|                 3 |                  1 |                           2 |               4 | hikers |
-|                 3 |                  1 |                           2 |               4 | hikers |
+|                 1 |                  2 |                           3 |               4 | hikers |
 |                 1 |                  3 |                           2 |               4 | hikers |
+|                 3 |                  2 |                           1 |               4 | hikers |
 |                 1 |                  3 |                           4 |               2 | hikers |
 
 <span id="tab:eg-data"></span>Table 1: Example dataset. Note that a
@@ -175,11 +171,83 @@ sample of respondents to rank a set of items in terms of the target of
 the research (e.g., least to most preferred). The Thurstone models then
 assume that, if a certain person is presented with items $$1,2,...,K$$,
 then they will have a realized vector of utilities
-$${\bf u} = (u_1, u_2, ..., u_K)^\top$$.
+$${\bf u} = (u_1, u_2, ..., u_K)^\top$$ that are draws from the utility
+distributions (Figure <a href="#fig:concept-fig">1</a>). For brevity, I
+will denote $${\bf U}$$ the random vector of utilities and denote
+$$f_{U}({\bf u})$$ the joint probability density function. Now, assume
+the respondent internally orders the elements of the vector $${\bf u}$$
+in terms of the size, then responds with the rank orders. For example,
+assume $$u_2 < u_1 < u_4 < u_3$$ (note that we need not worry about
+equivalency because these are continuous random variables, so
+$$P(u_j = u_k) = 0$$ for any $$j \ne k$$). With this ordering, the
+response for items 1 – 4 would read as follows:
+
+| item 1 | item 2 | item 3 | item 4 |
+|-------:|-------:|-------:|-------:|
+|      2 |      1 |      4 |      3 |
+
+Figure <a href="#fig:concept-fig">1</a> depicts this scenario. Notice
+how the spacing between the elements of $$\bf u$$ is not reflected in
+the rank data, only their order in terms of utility. So, how do we begin
+to understand the spacing between the means of these utility
+distributions?
+
+<div class="figure" style="text-align: center">
+
+<img src="/assets/images/thurstone_blog/densities_final.png" alt="Conceptual figure of the Thurstone model following the example given in the text." width="60%" />
+<p class="caption">
+<span id="fig:concept-fig"></span>Figure 1: Conceptual figure of the
+Thurstone model following the example given in the text.
+</p>
+
+</div>
+
+## Ranks as pairs
+
+In order to fit Thurstone models, we transform the ranking data into
+*pairs data* by listing all possible pairs of items, which is
+$$K\choose{2}$$ for $$K$$ items. The new variables take the form
+
+$$
+y_{i,jk} = \begin{cases}
+1 &  r_j < r_k\\
+0 & \text{otherwise}
+\end{cases}
+$$
+
+where $$r_j$$ is the rank given to item $$j$$ such that $$y_{i,jk}$$ is
+an indicator variable indicating whether respondent $$i$$ ranked item
+$$j$$ before (as in a smaller integer, which could mean higher priority
+depending on the question) item $$k$$. Thus, the mean of these
+indicators, $${\bar y}_{jk} = \frac{1}{n}\sum_{i=1}^n y_{i,jk}$$, is an
+estimator for
+
+$$
+P(R_j < R_k) = P(U_j < U_k) = P(U_j - U_k < 0)
+$$
+
+where I am using capital letters to distinguish these random variables
+from *realizations* of the random variables as above. Notice here that
+we side-step the issue of not being able to measure $${\bf u}$$ by
+focusing on estimating the probability that a given item is ranked
+before another. This probability depends on the *difference* between the
+utilities rather than a measure of the utilities themselves. This also
+gets us closer to estimating the quantities of interest; namely, the
+probabilities of specific *rankings*, such as
+$$P(U_2 < U_1 < U_4 < U_3)$$.
+
+## The magic of normal
+
+While transforming the rank data to pairs data got us closer to
+estimating the probabilities of certain rankings, we can’t actually go
+from paired probabilities, that is $$P(U_j < U_k)$$ for all pairs of
+$$j \ne k$$, to the probability of a specific ordering of the elements
+of $$\bf U$$ without knowing something more about the joint distribution
+of the $$U$$’s, $$f_U({\bf u})$$.
 
 ## References
 
-{% bibliography –file references_ranking_data_blog.bib %}
+{% bibliography -f references_ranking_data_blog.bib %}
 
 [^1]: *Utility* seems very, well, utilitarian to me. I would suggest
     that *value* might be better terminology for this day and age.
