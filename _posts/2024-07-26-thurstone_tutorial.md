@@ -1,5 +1,4 @@
 ---
-layout: single
 classes: wide
 title:  "A tutorial on analyzing ranking data"
 subtitle: "Casting Thurstone Case V models as SEMs"
@@ -7,10 +6,6 @@ date:   "July 2024"
 categories: "Common issues"
 usemathjax: true
 toc: true
-output:
-  bookdown::github_document2:
-    number_sections: false
-    preserve_yaml: true
 ---
 
 
@@ -56,11 +51,11 @@ representative samples of the populations of interest.
 | Trail maintenance | Trail construction | Invasive species management | Forest thinning | Group  |
 |------------------:|-------------------:|----------------------------:|----------------:|:-------|
 |                 3 |                  1 |                           2 |               4 | hikers |
-|                 3 |                  2 |                           1 |               4 | hikers |
+|                 2 |                  3 |                           1 |               4 | hikers |
 |                 3 |                  1 |                           4 |               2 | hikers |
-|                 1 |                  3 |                           2 |               4 | hikers |
-|                 1 |                  3 |                           4 |               2 | hikers |
 |                 3 |                  1 |                           2 |               4 | hikers |
+|                 1 |                  3 |                           2 |               4 | hikers |
+|                 3 |                  4 |                           2 |               1 | hikers |
 
 <span id="tab:eg-data"></span>Table 1: Example dataset. Note that a
 lower rank means higher priority or preference in this case.
@@ -202,7 +197,7 @@ Thurstone model following the example given in the text.
 
 </div>
 
-## Ranks as pairs
+### Ranks as pairs
 
 In order to fit Thurstone models, we transform the ranking data into
 *pairs data* by listing all possible pairs of items, which is
@@ -236,7 +231,7 @@ gets us closer to estimating the quantities of interest; namely, the
 probabilities of specific *rankings*, such as
 $$P(U_2 < U_1 < U_4 < U_3)$$.
 
-## The magic of normal
+### The magic of normal
 
 While transforming the rank data to pairs data got us closer to
 estimating the probabilities of certain rankings, we can’t actually go
@@ -255,9 +250,64 @@ pairs data can give us information on quantities like $$P(U_1 < U_2)$$,
 we know this probability can be derived from the joint distribution as
 
 $$
-P(U_1 < U_2) = \int_{u_1}^\infty \int_{-\infty}^{u_1} \int_{-\infty}^\infty \int_{-\infty}^\infty f_U({\bf u})du_3 du_4du_1 du_2
-$$ which can be simplified greatly by other convenient properties of
-normals, such as the linear combination property[^2]
+P(U_1 < U_2) = \int_{-\infty}^\infty \int_{-\infty}^{u_2} f_{U_1, U_2}(u_1, u_2\ |\ \mu_1, \mu_2, {\boldsymbol \Sigma}_{12})du_1 du_2
+$$
+
+where $$\boldsymbol \Sigma_{12}$$ is a $$2\times 2$$ matrix composed of
+the first two rows and columns of the joint covariance matrix. This
+integral can be simplified greatly by other convenient properties of
+normals, such as the linear combination property[^2].
+
+Assuming a joint normal distribution for $$\bf U$$ allows us to know the
+distribution of any subset of the $$\bf U$$’s, but there are still more
+assumptions we need to make in order to estimate the model from data.
+Specifically, we need to fix one of the elements of the mean vector,
+$$\boldsymbol \mu$$, somewhere along the utility axis. This is because
+the pairs data can only give us information about how far apart the
+means are from one another, not their absolution location. It is
+therefore customary to fix the last element in $$\boldsymbol \mu$$ to
+zero such that $$\mu_K = 0$$. This may seem like a slight-of-hand, but
+recall that the utility axis is a construct, so absolute positions along
+it are totally arbitrary anyway. All we actually care about are the
+probabilities of certain rankings, which depend on the order of a random
+vector $$\bf U$$ drawn from the joint distribution, which ultimately
+depends on the spacing among the means (Figure
+<a href="#fig:concept-fig">1</a>) and the covariance structure. For the
+purposes of this post, I only discuss the model for which the utilities
+are assumed independent with equal variance such that the covariance
+matrix $$\boldsymbol \Sigma = \sigma^2{\bf I}_K$$, where $${\bf I}_K$$ is
+the $$K\times K$$ identity matrix. This is known as the *Thurstone Case
+V* model, and is the simplest (but most constrained case due to the
+constraints on the covariance matrix) {% cite thurstone1931 %}.
+
+## Thurstone models as SEMs
+
+Using the setup from above using the paired data to give information on
+the relative distances among the means of the utility distributions, we
+can represent Thurstone models as structural equation models (SEMs;
+Figure <a href="#fig:sem">2</a>).
+
+``` r
+knitr::include_graphics(
+  here::here("assets/images/thurstone_blog/thurstone5_sem.png")
+)
+```
+
+<div class="figure">
+
+<img src="/assets/images/thurstone_blog/thurstone5_sem.png" width="100%" />
+<p class="caption">
+<span id="fig:sem"></span>Figure 2: Path diagram of the Thurstone case V
+model cast as a SEM. All path coefficients from the latent means to the
+differences \(d_{ij}\) are fixed at either 1 (black arrow) or -1, (red
+arrow). The exogenous variables, \(y_{ij}\) are the pairs data, taking
+the value 1 if item $$i$$ was ranked ahead of item $$j$$ and 0
+otherwise. These exogenous variables are linked to the latent
+differences through the probit link function, denoted $$\Phi()$$. The
+$$z_{ij}$$’s are the standardized latent differences.
+</p>
+
+</div>
 
 ## References
 

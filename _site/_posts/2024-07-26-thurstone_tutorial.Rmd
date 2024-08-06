@@ -457,7 +457,7 @@ knitr::include_graphics(
 )
 ```
 
-## Ranks as pairs
+### Ranks as pairs
 
 In order to fit Thurstone models, we transform the ranking data into *pairs data* by listing all possible pairs of items, which is $$K\choose{2}$$ for $$K$$ items. The new variables take the form
 
@@ -476,16 +476,32 @@ $$
 
 where I am using capital letters to distinguish these random variables from *realizations* of the random variables as above. Notice here that we side-step the issue of not being able to measure $${\bf u}$$ by focusing on estimating the probability that a given item is ranked before another. This probability depends on the *difference* between the utilities rather than a measure of the utilities themselves. This also gets us closer to estimating the quantities of interest; namely, the probabilities of specific *rankings*, such as $$P(U_2 < U_1 < U_4 < U_3)$$.
 
-## The magic of normal
+### The magic of normal
 
 While transforming the rank data to pairs data got us closer to estimating the probabilities of certain rankings, we can't actually go from paired probabilities, that is $$P(U_j < U_k)$$ for all pairs of $$j \ne k$$, to the probability of a specific ordering of the elements of $$\bf U$$ without knowing something more about the joint distribution of the $$U$$'s, $$f_U({\bf u})$$.
 
 If we assume we know that $$f_U({\bf u}) \sim \mathcal{N}({\boldsymbol \mu}, {\boldsymbol \Sigma_u})$$, this allows us to estimate the latent model based on the pairs data due to the magical properties (`r emoji::emoji("mushroom")`) of normal distributions. Namely, that if the joint distribution of $$\bf U$$ is multivariate normal, then any subset of the $$U$$'s is also (multivariate) normal. Thus, since the pairs data can give us information on quantities like $$P(U_1 < U_2)$$, we know this probability can be derived from the joint distribution as
 
 $$
-P(U_1 < U_2) = \int_{u_1}^\infty \int_{-\infty}^{u_1} \int_{-\infty}^\infty \int_{-\infty}^\infty f_U({\bf u})du_3 du_4du_1 du_2
+P(U_1 < U_2) = \int_{-\infty}^\infty \int_{-\infty}^{u_2} f_{U_1, U_2}(u_1, u_2\ |\ \mu_1, \mu_2, {\boldsymbol \Sigma}_{12})du_1 du_2
 $$
-which can be simplified greatly by other convenient properties of normals, such as the linear combination property^[Suppose we have a multivariate normal distribution with mean $${\boldsymbol \mu}$$ and variance $$\boldsymbol \Sigma$$. Then any linear combination $${\bf c}$$ of the component distributions will be normal with mean $${\bf c}^\top {\boldsymbol \mu}$$ and variance $${\bf c}^\top {\boldsymbol \Sigma} {\bf c}$$]
+
+where $$\boldsymbol \Sigma_{12}$$ is a $$2\times 2$$ matrix composed of the first two rows and columns of the joint covariance matrix. This integral can be simplified greatly by other convenient properties of normals, such as the linear combination property^[Suppose we have a multivariate normal distribution with mean $${\boldsymbol \mu}$$ and variance $$\boldsymbol \Sigma$$. Then any linear combination $${\bf c}$$ of the component distributions will be normal with mean $${\bf c}^\top {\boldsymbol \mu}$$ and variance $${\bf c}^\top {\boldsymbol \Sigma} {\bf c}$$]. 
+
+Assuming a joint normal distribution for $$\bf U$$ allows us to know the distribution of any subset of the $$\bf U$$'s, but there are still more assumptions we need to make in order to estimate the model from data. Specifically, we need to fix one of the elements of the mean vector, $$\boldsymbol \mu$$, somewhere along the utility axis. This is because the pairs data can only give us information about how far apart the means are from one another, not their absolution location. It is therefore customary to fix the last element in $$\boldsymbol \mu$$ to zero such that $$\mu_K = 0$$. This may seem like a slight-of-hand, but recall that the utility axis is a construct, so absolute positions along it are totally arbitrary anyway. All we actually care about are the probabilities of certain rankings, which depend on the order of a random vector $$\bf U$$ drawn from the joint distribution, which ultimately depends on the spacing among the means (Figure \@ref(fig:concept-fig)) and the covariance structure. For the purposes of this post, I only discuss the model for which the utilities are assumed independent with equal variance such that the covariance matrix $$\boldsymbol \Sigma = \sigma^2{\bf I}_K$$, where \({\bf I}_K\) is the $$K\times K$$ identity matrix. This is known as the *Thurstone Case V* model, and is the simplest (but most constrained case due to the constraints on the covariance matrix) (missing reference).
+
+
+## Thurstone models as SEMs
+
+Using the setup from above using the paired data to give information on the relative distances among the means of the utility distributions, we can represent Thurstone models as structural equation models (SEMs; Figure \@ref(fig:sem)).
+
+```{r sem, out.width="100%", fig.cap="Path diagram of the Thurstone case V model cast as a SEM. All path coefficients from the latent means to the differences \\(d_{ij}\\) are fixed at either 1 (black arrow) or -1, (red arrow). The exogenous variables, $$y_{ij}$$ are the pairs data, taking the value 1 if item $$i$$ was ranked ahead of item $$j$$ and 0 otherwise. These exogenous variables are linked to the latent differences through the probit link function, denoted $$\\Phi()$$. The $$z_{ij}$$'s are the standardized latent differences."}
+knitr::include_graphics(
+  here::here("assets/images/thurstone_blog/thurstone5_sem.png")
+)
+```
+
+
 
 
 
@@ -495,6 +511,7 @@ which can be simplified greatly by other convenient properties of normals, such 
 <ol class="bibliography"><li><span id="maydeu-olivares_SEM_2005">Maydeu-Olivares, A., &amp; Böckenholt, U. (2005). Structural Equation Modeling of Paired-Comparison and Ranking Data. <i>Psychological Methods</i>, <i>10</i>(3), 285–304. https://doi.org/10.1037/1082-989X.10.3.285</span></li>
 <li><span id="nlme">Pinheiro, J., Bates, D., &amp; R Core Team. (2024). <i>nlme: Linear and Nonlinear Mixed Effects Models</i>. https://CRAN.R-project.org/package=nlme</span></li>
 <li><span id="lavaan">Rosseel, Y. (2012). lavaan: An R Package for Structural Equation Modeling. <i>Journal of Statistical Software</i>, <i>48</i>(2), 1–36. https://doi.org/10.18637/jss.v048.i02</span></li>
+<li><span id="thurstone1931">Thurstone, L. L. (1931). Rank Order as a Psycho-Physical Method. <i>Journal of Experimental Psychology</i>, <i>14</i>(3), 187–201. https://doi.org/10.1037/h0070025</span></li>
 <li><span id="thurstone_wiki">Wikipedia contributors. (2024). <i>Thurstone scale — Wikipedia, The Free Encyclopedia</i>. https://en.wikipedia.org/w/index.php?title=Thurstone_scale&oldid=1218530864</span></li></ol>
 
 
