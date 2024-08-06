@@ -172,6 +172,12 @@ where I am using capital letters to distinguish these random variables from *rea
 
 While transforming the rank data to pairs data got us closer to estimating the probabilities of certain rankings, we can't actually go from paired probabilities, that is $$P(U_j < U_k)$$ for all pairs of $$j \ne k$$, to the probability of a specific ordering of the elements of $$\bf U$$ without knowing something more about the joint distribution of the $$U$$'s, $$f_U({\bf u})$$.
 
+If we assume we know that $$f_U({\bf u}) \sim \mathcal{N}({\boldsymbol \mu}, {\boldsymbol \Sigma_u})$$, this allows us to estimate the latent model based on the pairs data due to the magical properties (`r emoji::emoji("mushroom")`) of normal distributions. Namely, that if the joint distribution of $$\bf U$$ is multivariate normal, then any subset of the $$U$$'s is also (multivariate) normal. Thus, since the pairs data can give us information on quantities like $$P(U_1 < U_2)$$, we know this probability can be derived from the joint distribution as
+
+$$
+P(U_1 < U_2) = \int_{u_1}^\infty \int_{-\infty}^{u_1} \int_{-\infty}^\infty \int_{-\infty}^\infty f_U({\bf u})du_3 du_4du_1 du_2
+$$
+which can be simplified greatly by other convenient properties of normals, such as the linear combination property^[Suppose we have a multivariate normal distribution with mean $${\boldsymbol \mu}$$ and variance $$\boldsymbol \Sigma$$. Then any linear combination $${\bf c}$$ of the component distributions will be normal with mean $${\bf c}^\top {\boldsymbol \mu}$$ and variance $${\bf c}^\top {\boldsymbol \Sigma} {\bf c}$$]
 
 
 

@@ -56,11 +56,11 @@ representative samples of the populations of interest.
 | Trail maintenance | Trail construction | Invasive species management | Forest thinning | Group  |
 |------------------:|-------------------:|----------------------------:|----------------:|:-------|
 |                 3 |                  1 |                           2 |               4 | hikers |
-|                 3 |                  1 |                           2 |               4 | hikers |
-|                 1 |                  2 |                           3 |               4 | hikers |
-|                 1 |                  3 |                           2 |               4 | hikers |
 |                 3 |                  2 |                           1 |               4 | hikers |
+|                 3 |                  1 |                           4 |               2 | hikers |
+|                 1 |                  3 |                           2 |               4 | hikers |
 |                 1 |                  3 |                           4 |               2 | hikers |
+|                 3 |                  1 |                           2 |               4 | hikers |
 
 <span id="tab:eg-data"></span>Table 1: Example dataset. Note that a
 lower rank means higher priority or preference in this case.
@@ -179,7 +179,7 @@ the respondent internally orders the elements of the vector $${\bf u}$$
 in terms of the size, then responds with the rank orders. For example,
 assume $$u_2 < u_1 < u_4 < u_3$$ (note that we need not worry about
 equivalency because these are continuous random variables, so
-$$P(u_j = u_k) = 0$$ for any $$j \ne k$$). With this ordering, the
+$$P(u_j = u_k) = 0$$ for any $j \ne k$). With this ordering, the
 response for items 1 – 4 would read as follows:
 
 | item 1 | item 2 | item 3 | item 4 |
@@ -194,7 +194,7 @@ distributions?
 
 <div class="figure" style="text-align: center">
 
-<img src="/assets/images/thurstone_blog/densities_final.png" alt="Conceptual figure of the Thurstone model following the example given in the text." width="60%" />
+<img src="../assets/images/thurstone_blog/densities_final.png" alt="Conceptual figure of the Thurstone model following the example given in the text." width="60%" />
 <p class="caption">
 <span id="fig:concept-fig"></span>Figure 1: Conceptual figure of the
 Thurstone model following the example given in the text.
@@ -245,9 +245,29 @@ $$j \ne k$$, to the probability of a specific ordering of the elements
 of $$\bf U$$ without knowing something more about the joint distribution
 of the $$U$$’s, $$f_U({\bf u})$$.
 
+If we assume we know that
+$$f_U({\bf u}) \sim \mathcal{N}({\boldsymbol \mu}, {\boldsymbol \Sigma_u})$$,
+this allows us to estimate the latent model based on the pairs data due
+to the magical properties (🍄) of normal distributions. Namely, that if
+the joint distribution of $$\bf U$$ is multivariate normal, then any
+subset of the $$U$$’s is also (multivariate) normal. Thus, since the
+pairs data can give us information on quantities like $$P(U_1 < U_2)$$,
+we know this probability can be derived from the joint distribution as
+
+$$
+P(U_1 < U_2) = \int_{u_1}^\infty \int_{-\infty}^{u_1} \int_{-\infty}^\infty \int_{-\infty}^\infty f_U({\bf u})du_3 du_4du_1 du_2
+$$ which can be simplified greatly by other convenient properties of
+normals, such as the linear combination property[^2]
+
 ## References
 
 {% bibliography -f references_ranking_data_blog.bib %}
 
 [^1]: *Utility* seems very, well, utilitarian to me. I would suggest
     that *value* might be better terminology for this day and age.
+
+[^2]: Suppose we have a multivariate normal distribution with mean
+    $${\boldsymbol \mu}$$ and variance $$\boldsymbol \Sigma$$. Then any
+    linear combination $${\bf c}$$ of the component distributions will
+    be normal with mean $${\bf c}^\top {\boldsymbol \mu}$$ and variance
+    $${\bf c}^\top {\boldsymbol \Sigma} {\bf c}$$

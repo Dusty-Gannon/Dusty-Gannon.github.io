@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.3">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2024-07-31T18:02:04-07:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Dusty Gannon</title><subtitle>Website and blog for Dusty Gannon, statistical consultant and ecologist.</subtitle><author><name>Dusty Gannon</name></author><entry><title type="html">A tutorial on analyzing ranking data</title><link href="http://localhost:4000/common/issues/thurstone_tutorial/" rel="alternate" type="text/html" title="A tutorial on analyzing ranking data" /><published>2024-07-01T00:00:00-07:00</published><updated>2024-07-01T00:00:00-07:00</updated><id>http://localhost:4000/common/issues/thurstone_tutorial</id><content type="html" xml:base="http://localhost:4000/common/issues/thurstone_tutorial/"># Ranking data
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.3">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2024-08-05T17:05:23-07:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Dusty Gannon</title><subtitle>Website and blog for Dusty Gannon, statistical consultant and ecologist.</subtitle><author><name>Dusty Gannon</name></author><entry><title type="html">A tutorial on analyzing ranking data</title><link href="http://localhost:4000/common/issues/thurstone_tutorial/" rel="alternate" type="text/html" title="A tutorial on analyzing ranking data" /><published>2024-07-01T00:00:00-07:00</published><updated>2024-07-01T00:00:00-07:00</updated><id>http://localhost:4000/common/issues/thurstone_tutorial</id><content type="html" xml:base="http://localhost:4000/common/issues/thurstone_tutorial/"># Ranking data
 
 Ranking data are common in survey-based research. Ranking data arise from survey questions in which a respondent is asked to rank a set of items by their priority or preference in the view of the respondent. I have recently encountered this type of data in my consulting practice and discovered that there is a relative paucity of approachable material available on analyzing these data, particularly when the research questions involve differences among populations of interest or covariates that could drive different rankings. This post is meant to act as a guide for graduate-level readers and above, with code for fitting the popular Thurstone Case V model with the potential for covariates using R package &lt;a class=&quot;citation&quot; href=&quot;#lavaan&quot;&gt;(Rosseel, 2012)&lt;/a&gt;. I include some of the mathematical details for interested readers, but I point to recently developed R packages (shamelessly promoting one I am developing as well) that do not require understanding of all the nuts and bolts.
 
@@ -156,6 +156,12 @@ where I am using capital letters to distinguish these random variables from *rea
 
 While transforming the rank data to pairs data got us closer to estimating the probabilities of certain rankings, we can't actually go from paired probabilities, that is $$P(U_j &lt; U_k)$$ for all pairs of $$j \ne k$$, to the probability of a specific ordering of the elements of $$\bf U$$ without knowing something more about the joint distribution of the $$U$$'s, $$f_U({\bf u})$$.
 
+If we assume we know that $$f_U({\bf u}) \sim \mathcal{N}({\boldsymbol \mu}, {\boldsymbol \Sigma_u})$$, this allows us to estimate the latent model based on the pairs data due to the magical properties (`r emoji::emoji(&quot;mushroom&quot;)`) of normal distributions. Namely, that if the joint distribution of $$\bf U$$ is multivariate normal, then any subset of the $$U$$'s is also (multivariate) normal. Thus, since the pairs data can give us information on quantities like $$P(U_1 &lt; U_2)$$, we know this probability can be derived from the joint distribution as
+
+$$
+P(U_1 &lt; U_2) = \int_{u_1}^\infty \int_{-\infty}^{u_1} \int_{-\infty}^\infty \int_{-\infty}^\infty f_U({\bf u})du_3 du_4du_1 du_2
+$$
+which can be simplified greatly by other convenient properties of normals, such as the linear combination property^[Suppose we have a multivariate normal distribution with mean $${\boldsymbol \mu}$$ and variance $$\boldsymbol \Sigma$$. Then any linear combination $${\bf c}$$ of the component distributions will be normal with mean $${\bf c}^\top {\boldsymbol \mu}$$ and variance $${\bf c}^\top {\boldsymbol \Sigma} {\bf c}$$]
 
 
 
@@ -226,29 +232,22 @@ representative samples of the populations of interest.&lt;/p&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
-      &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
-      &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
       &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
       &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
     &lt;/tr&gt;
@@ -257,6 +256,13 @@ representative samples of the populations of interest.&lt;/p&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
       &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
@@ -378,7 +384,7 @@ the respondent internally orders the elements of the vector \({\bf u}\)
 in terms of the size, then responds with the rank orders. For example,
 assume \(u_2 &amp;lt; u_1 &amp;lt; u_4 &amp;lt; u_3\) (note that we need not worry about
 equivalency because these are continuous random variables, so
-\(P(u_j = u_k) = 0\) for any \(j \ne k\)). With this ordering, the
+\(P(u_j = u_k) = 0\) for any $j \ne k$). With this ordering, the
 response for items 1 – 4 would read as follows:&lt;/p&gt;
 
 &lt;table&gt;
@@ -408,7 +414,7 @@ distributions?&lt;/p&gt;
 
 &lt;div class=&quot;figure&quot; style=&quot;text-align: center&quot;&gt;
 
-&lt;img src=&quot;/assets/images/thurstone_blog/densities_final.png&quot; alt=&quot;Conceptual figure of the Thurstone model following the example given in the text.&quot; width=&quot;60%&quot; /&gt;
+&lt;img src=&quot;../assets/images/thurstone_blog/densities_final.png&quot; alt=&quot;Conceptual figure of the Thurstone model following the example given in the text.&quot; width=&quot;60%&quot; /&gt;
 &lt;p class=&quot;caption&quot;&gt;
 &lt;span id=&quot;fig:concept-fig&quot;&gt;&lt;/span&gt;Figure 1: Conceptual figure of the
 Thurstone model following the example given in the text.
@@ -455,6 +461,18 @@ from paired probabilities, that is \(P(U_j &amp;lt; U_k)\) for all pairs of
 of \(\bf U\) without knowing something more about the joint distribution
 of the \(U\)’s, \(f_U({\bf u})\).&lt;/p&gt;
 
+&lt;p&gt;If we assume we know that
+\(f_U({\bf u}) \sim \mathcal{N}({\boldsymbol \mu}, {\boldsymbol \Sigma_u})\),
+this allows us to estimate the latent model based on the pairs data due
+to the magical properties (🍄) of normal distributions. Namely, that if
+the joint distribution of \(\bf U\) is multivariate normal, then any
+subset of the \(U\)’s is also (multivariate) normal. Thus, since the
+pairs data can give us information on quantities like \(P(U_1 &amp;lt; U_2)\),
+we know this probability can be derived from the joint distribution as&lt;/p&gt;
+
+&lt;p&gt;\(P(U_1 &amp;lt; U_2) = \int_{u_1}^\infty \int_{-\infty}^{u_1} \int_{-\infty}^\infty \int_{-\infty}^\infty f_U({\bf u})du_3 du_4du_1 du_2\) which can be simplified greatly by other convenient properties of
+normals, such as the linear combination property&lt;sup id=&quot;fnref:2&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:2&quot; class=&quot;footnote&quot; rel=&quot;footnote&quot;&gt;2&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
+
 &lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
 
 &lt;ol class=&quot;bibliography&quot;&gt;&lt;li&gt;&lt;span id=&quot;maydeu-olivares_SEM_2005&quot;&gt;Maydeu-Olivares, A., &amp;amp; Böckenholt, U. (2005). Structural Equation Modeling of Paired-Comparison and Ranking Data. &lt;i&gt;Psychological Methods&lt;/i&gt;, &lt;i&gt;10&lt;/i&gt;(3), 285–304. https://doi.org/10.1037/1082-989X.10.3.285&lt;/span&gt;&lt;/li&gt;
@@ -467,6 +485,13 @@ of the \(U\)’s, \(f_U({\bf u})\).&lt;/p&gt;
     &lt;li id=&quot;fn:1&quot; role=&quot;doc-endnote&quot;&gt;
       &lt;p&gt;&lt;em&gt;Utility&lt;/em&gt; seems very, well, utilitarian to me. I would suggest
 that &lt;em&gt;value&lt;/em&gt; might be better terminology for this day and age. &lt;a href=&quot;#fnref:1&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:2&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;Suppose we have a multivariate normal distribution with mean
+\({\boldsymbol \mu}\) and variance \(\boldsymbol \Sigma\). Then any
+linear combination \({\bf c}\) of the component distributions will
+be normal with mean \({\bf c}^\top {\boldsymbol \mu}\) and variance
+\({\bf c}^\top {\boldsymbol \Sigma} {\bf c}\) &lt;a href=&quot;#fnref:2&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
     &lt;/li&gt;
   &lt;/ol&gt;
 &lt;/div&gt;</content><author><name>Dusty Gannon</name></author><category term="Common" /><category term="issues" /><summary type="html">Ranking data</summary></entry></feed>

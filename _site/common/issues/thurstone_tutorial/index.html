@@ -327,7 +327,7 @@ window.MathJax = {
       <span class="page__meta-readtime">
         <i class="far fa-clock" aria-hidden="true"></i>
         
-          9 minute read
+          10 minute read
         
       </span>
     
@@ -408,29 +408,22 @@ representative samples of the populations of interest.</p>
     </tr>
     <tr>
       <td style="text-align: right">3</td>
-      <td style="text-align: right">1</td>
       <td style="text-align: right">2</td>
-      <td style="text-align: right">4</td>
-      <td style="text-align: left">hikers</td>
-    </tr>
-    <tr>
       <td style="text-align: right">1</td>
-      <td style="text-align: right">2</td>
-      <td style="text-align: right">3</td>
-      <td style="text-align: right">4</td>
-      <td style="text-align: left">hikers</td>
-    </tr>
-    <tr>
-      <td style="text-align: right">1</td>
-      <td style="text-align: right">3</td>
-      <td style="text-align: right">2</td>
       <td style="text-align: right">4</td>
       <td style="text-align: left">hikers</td>
     </tr>
     <tr>
       <td style="text-align: right">3</td>
-      <td style="text-align: right">2</td>
       <td style="text-align: right">1</td>
+      <td style="text-align: right">4</td>
+      <td style="text-align: right">2</td>
+      <td style="text-align: left">hikers</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">1</td>
+      <td style="text-align: right">3</td>
+      <td style="text-align: right">2</td>
       <td style="text-align: right">4</td>
       <td style="text-align: left">hikers</td>
     </tr>
@@ -439,6 +432,13 @@ representative samples of the populations of interest.</p>
       <td style="text-align: right">3</td>
       <td style="text-align: right">4</td>
       <td style="text-align: right">2</td>
+      <td style="text-align: left">hikers</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">3</td>
+      <td style="text-align: right">1</td>
+      <td style="text-align: right">2</td>
+      <td style="text-align: right">4</td>
       <td style="text-align: left">hikers</td>
     </tr>
   </tbody>
@@ -560,7 +560,7 @@ the respondent internally orders the elements of the vector \({\bf u}\)
 in terms of the size, then responds with the rank orders. For example,
 assume \(u_2 &lt; u_1 &lt; u_4 &lt; u_3\) (note that we need not worry about
 equivalency because these are continuous random variables, so
-\(P(u_j = u_k) = 0\) for any \(j \ne k\)). With this ordering, the
+\(P(u_j = u_k) = 0\) for any $j \ne k$). With this ordering, the
 response for items 1 – 4 would read as follows:</p>
 
 <table>
@@ -590,7 +590,7 @@ distributions?</p>
 
 <div class="figure" style="text-align: center">
 
-<img src="/assets/images/thurstone_blog/densities_final.png" alt="Conceptual figure of the Thurstone model following the example given in the text." width="60%" />
+<img src="../assets/images/thurstone_blog/densities_final.png" alt="Conceptual figure of the Thurstone model following the example given in the text." width="60%" />
 <p class="caption">
 <span id="fig:concept-fig"></span>Figure 1: Conceptual figure of the
 Thurstone model following the example given in the text.
@@ -637,6 +637,18 @@ from paired probabilities, that is \(P(U_j &lt; U_k)\) for all pairs of
 of \(\bf U\) without knowing something more about the joint distribution
 of the \(U\)’s, \(f_U({\bf u})\).</p>
 
+<p>If we assume we know that
+\(f_U({\bf u}) \sim \mathcal{N}({\boldsymbol \mu}, {\boldsymbol \Sigma_u})\),
+this allows us to estimate the latent model based on the pairs data due
+to the magical properties (🍄) of normal distributions. Namely, that if
+the joint distribution of \(\bf U\) is multivariate normal, then any
+subset of the \(U\)’s is also (multivariate) normal. Thus, since the
+pairs data can give us information on quantities like \(P(U_1 &lt; U_2)\),
+we know this probability can be derived from the joint distribution as</p>
+
+<p>\(P(U_1 &lt; U_2) = \int_{u_1}^\infty \int_{-\infty}^{u_1} \int_{-\infty}^\infty \int_{-\infty}^\infty f_U({\bf u})du_3 du_4du_1 du_2\) which can be simplified greatly by other convenient properties of
+normals, such as the linear combination property<sup id="fnref:2" role="doc-noteref"><a href="#fn:2" class="footnote" rel="footnote">2</a></sup></p>
+
 <h2 id="references">References</h2>
 
 <ol class="bibliography"><li><span id="maydeu-olivares_SEM_2005">Maydeu-Olivares, A., &amp; Böckenholt, U. (2005). Structural Equation Modeling of Paired-Comparison and Ranking Data. <i>Psychological Methods</i>, <i>10</i>(3), 285–304. https://doi.org/10.1037/1082-989X.10.3.285</span></li>
@@ -649,6 +661,13 @@ of the \(U\)’s, \(f_U({\bf u})\).</p>
     <li id="fn:1" role="doc-endnote">
       <p><em>Utility</em> seems very, well, utilitarian to me. I would suggest
 that <em>value</em> might be better terminology for this day and age. <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:2" role="doc-endnote">
+      <p>Suppose we have a multivariate normal distribution with mean
+\({\boldsymbol \mu}\) and variance \(\boldsymbol \Sigma\). Then any
+linear combination \({\bf c}\) of the component distributions will
+be normal with mean \({\bf c}^\top {\boldsymbol \mu}\) and variance
+\({\bf c}^\top {\boldsymbol \Sigma} {\bf c}\) <a href="#fnref:2" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
 </div>
