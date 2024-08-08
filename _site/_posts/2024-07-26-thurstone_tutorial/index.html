@@ -317,7 +317,7 @@ window.MathJax = {
           <aside class="sidebar__right ">
             <nav class="toc">
               <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
-              <ul class="toc__menu"><li><a href="#ranking-data">Ranking data</a><ul><li><a href="#the-data-structure">The data structure</a></li></ul></li><li><a href="#analysis">Analysis</a><ul><li><a href="#potential-work-arounds">Potential work-arounds?</a><ul><li><a href="#anova">ANOVA?</a></li><li><a href="#lmms">LMMs?</a></li></ul></li><li><a href="#thurstones-model">Thurstone’s model</a><ul><li><a href="#ranks-as-pairs">Ranks as pairs</a></li><li><a href="#the-magic-of-normal">The magic of normal</a></li></ul></li><li><a href="#thurstone-models-as-sems">Thurstone models as SEMs</a></li><li><a href="#references">References</a></li></ul></li></ul>
+              <ul class="toc__menu"><li><a href="#ranking-data">Ranking data</a><ul><li><a href="#the-data-structure">The data structure</a></li></ul></li><li><a href="#analysis">Analysis</a><ul><li><a href="#potential-work-arounds">Potential work-arounds?</a><ul><li><a href="#anova">ANOVA?</a></li><li><a href="#lmms">LMMs?</a></li></ul></li><li><a href="#thurstones-model">Thurstone’s model</a><ul><li><a href="#ranks-as-pairs">Ranks as pairs</a></li><li><a href="#the-magic-of-normal">The magic of normal</a></li></ul></li><li><a href="#thurstone-models-as-sems">Thurstone models as SEMs</a></li></ul></li><li><a href="#fitting-the-model-with-lavaan">Fitting the model with lavaan</a><ul><li><a href="#preparing-the-data">Preparing the data</a></li><li><a href="#fitting-the-model">Fitting the model</a></li><li><a href="#interpretting-the-fitted-model">Interpretting the fitted model</a></li><li><a href="#references">References</a></li></ul></li></ul>
 
             </nav>
           </aside>
@@ -376,23 +376,9 @@ representative samples of the populations of interest.</p>
   <tbody>
     <tr>
       <td style="text-align: right">3</td>
-      <td style="text-align: right">1</td>
       <td style="text-align: right">2</td>
-      <td style="text-align: right">4</td>
-      <td style="text-align: left">hikers</td>
-    </tr>
-    <tr>
-      <td style="text-align: right">2</td>
-      <td style="text-align: right">3</td>
       <td style="text-align: right">1</td>
       <td style="text-align: right">4</td>
-      <td style="text-align: left">hikers</td>
-    </tr>
-    <tr>
-      <td style="text-align: right">3</td>
-      <td style="text-align: right">1</td>
-      <td style="text-align: right">4</td>
-      <td style="text-align: right">2</td>
       <td style="text-align: left">hikers</td>
     </tr>
     <tr>
@@ -403,17 +389,31 @@ representative samples of the populations of interest.</p>
       <td style="text-align: left">hikers</td>
     </tr>
     <tr>
+      <td style="text-align: right">2</td>
       <td style="text-align: right">1</td>
       <td style="text-align: right">3</td>
-      <td style="text-align: right">2</td>
       <td style="text-align: right">4</td>
       <td style="text-align: left">hikers</td>
     </tr>
     <tr>
       <td style="text-align: right">3</td>
+      <td style="text-align: right">1</td>
+      <td style="text-align: right">2</td>
+      <td style="text-align: right">4</td>
+      <td style="text-align: left">hikers</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">1</td>
+      <td style="text-align: right">4</td>
+      <td style="text-align: right">3</td>
+      <td style="text-align: right">2</td>
+      <td style="text-align: left">hikers</td>
+    </tr>
+    <tr>
+      <td style="text-align: right">1</td>
+      <td style="text-align: right">3</td>
       <td style="text-align: right">4</td>
       <td style="text-align: right">2</td>
-      <td style="text-align: right">1</td>
       <td style="text-align: left">hikers</td>
     </tr>
   </tbody>
@@ -565,7 +565,7 @@ distributions?</p>
 
 <div class="figure" style="text-align: center">
 
-<img src="../assets/images/thurstone_blog/densities_final.png" alt="Conceptual figure of the Thurstone model following the example given in the text." width="60%" />
+<img src="/assets/images/thurstone_blog/densities_final.png" width="60%" />
 <p class="caption">
 <span id="fig:concept-fig"></span>Figure 1: Conceptual figure of the
 Thurstone model following the example given in the text.
@@ -645,22 +645,83 @@ depends on the spacing among the means (Figure
 <a href="#fig:concept-fig">1</a>) and the covariance structure. For the
 purposes of this post, I only discuss the model for which the utilities
 are assumed independent with equal variance such that the covariance
-matrix \(\boldsymbol \Sigma = \sigma^2{\bf I}_K\), where \({\bf I}_K\) is
+matrix \(\boldsymbol \Sigma = \sigma^2{\bf I}_K\), where ${\bf I}_K$ is
 the \(K\times K\) identity matrix. This is known as the <em>Thurstone Case
 V</em> model, and is the simplest (but most constrained case due to the
 constraints on the covariance matrix) (missing reference).</p>
 
 <h2 id="thurstone-models-as-sems">Thurstone models as SEMs</h2>
 
-<p>Using the setup from above using the paired data to give information on
+<p>Using the setup from above with the paired data to give information on
 the relative distances among the means of the utility distributions, we
 can represent Thurstone models as structural equation models (SEMs;
-Figure <a href="#fig:sem">2</a>).</p>
+Figure <a href="#fig:sem">2</a>). The latent factors of the SEM are the
+utilities, which we assume to have a multivariate normal distribution
+with certain constraints. These utility distributions are measured by
+the pairwise differences in their means, of which there are
+\(K\choose 2\) unique differences. If we let \(\bf A\) be the design
+matrix mapping a vector of means \(\boldsymbol \mu\) to their pairwise
+differences, we have the model</p>
 
-<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">knitr</span><span class="o">::</span><span class="n">include_graphics</span><span class="p">(</span><span class="w">
-  </span><span class="n">here</span><span class="o">::</span><span class="n">here</span><span class="p">(</span><span class="s2">"assets/images/thurstone_blog/thurstone5_sem.png"</span><span class="p">)</span><span class="w">
-</span><span class="p">)</span><span class="w">
-</span></code></pre></div></div>
+\[{\boldsymbol \delta} = {\bf A} \boldsymbol\mu.\]
+
+<p>As an example, the design matrix for our example with four items and
+their respective population utility distributions, the design matrix
+will take the form</p>
+
+\[{\bf A} = \begin{bmatrix}
+1 &amp; -1 &amp; 0 &amp; 0\\
+1 &amp; 0 &amp; -1 &amp; 0\\
+1 &amp; 0 &amp; 0 &amp; -1\\
+0 &amp; 1 &amp; -1 &amp; 0\\
+0 &amp; 1 &amp; 0 &amp; -1\\
+0 &amp; 0 &amp; 1 &amp; -1\\
+\end{bmatrix}\]
+
+<p>with each row representing a difference between two of the means in the
+vector of four. The vector of differences is then linked to the binary
+pairs data,</p>
+
+\[y_{ij} = \begin{cases}
+1 &amp; \text{if } u_i &lt; u_j\\
+0 &amp; \text{otherwise}
+\end{cases}\]
+
+<p>through the <a href="https://en.wikipedia.org/wiki/Probit_model">probit</a> link
+function. Specifically, if we let</p>
+
+\[{\bf z} = {\bf D}({\bf d} - {\boldsymbol \delta})\]
+
+<p>be the standardized vector of a set of realized differences, \(\bf d\),
+with
+\({\bf D} = \text{diag}({\bf A}{\boldsymbol \Sigma}{\bf A}^\top)^{-1/2}\)
+as the diagonal matrix of the inverse standard deviations of the
+differences, then the pairs data are related to the latent means through
+what’s known as the <em>threshold relationship</em> <a class="citation" href="#maydeu-olivares_SEM_2005">(Maydeu-Olivares &amp; Böckenholt, 2005)</a>. Specifically,</p>
+
+\[y_{ij} = \begin{cases}
+1 &amp; \text{if } z_{ij} \ge \tau_{ij}\\
+0 &amp; \text{if } z_{ij} &lt; \tau_{ij}\\
+\end{cases}\]
+
+<p>where \({\boldsymbol \tau} = -{\bf DA}{\boldsymbol \mu}\) is the vector
+of thresholds.</p>
+
+<p>As discussed above, the final component of formulating the Thurstone
+Case V model as a SEM is to impose the constraints necessary for
+identifiability. First, note that \(\bf A\) is the factor loadings
+matrix which is completely known in this case. Second, we need to
+specify the variances and covariances of the latent factors (the
+utilities), which, for the Case V model, we assume equal variances and
+covariances equal to zero. Note that the exact value of the variances is
+arbitrary since we can always find means, \(\mu_1, \mu_2, \mu_1'\) and
+\(\mu_2'\) such that
+\(P(X_1 &lt; X_2 | \mu_1, \mu_2, \sigma_1^2) = P(Y_1 &lt; Y_2 | \mu_1', \mu_2', \sigma_2^2)\)
+for any specified \(\sigma_1^2\) and \(\sigma_2^2\) and
+\(X_1, X_2, Y_1, Y_2\) mutually independent. We therefore usually set
+\(\sigma^2 = 1\) for convenience. Finally, we need to fix one of the
+latent means to some arbitrary value. As mentioned above, we usually set
+\(\mu_K = 0\), arbitrarily.</p>
 
 <div class="figure">
 
@@ -670,13 +731,225 @@ Figure <a href="#fig:sem">2</a>).</p>
 model cast as a SEM. All path coefficients from the latent means to the
 differences \(d_{ij}\) are fixed at either 1 (black arrow) or -1, (red
 arrow). The exogenous variables, \(y_{ij}\) are the pairs data, taking
-the value 1 if item $$i$$ was ranked ahead of item $$j$$ and 0
+the value 1 if item \(i\) was ranked ahead of item \(j\) and 0
 otherwise. These exogenous variables are linked to the latent
-differences through the probit link function, denoted $$\Phi()$$. The
-$$z_{ij}$$’s are the standardized latent differences.
+differences through the probit link function, denoted \(\Phi()\). The
+\(z_{ij}\)’s are the standardized latent differences.
 </p>
 
 </div>
+
+<h1 id="fitting-the-model-with-lavaan">Fitting the model with <code class="language-plaintext highlighter-rouge">lavaan</code></h1>
+
+<p>Okay, now that the model description is out of the way, let’s finally
+learn how to fit this model in R! We will use the SEM software package
+<code class="language-plaintext highlighter-rouge">lavaan</code> for this, which is very flexible and has many convenient
+features. We will be using some infrequently used fitting options and
+arguments, which is part of what prompted me to create this post. It
+took me a while to figure out how to get <code class="language-plaintext highlighter-rouge">lavaan</code> to do what I wanted,
+so I thought this might be helpful to others out there with ranking
+data.</p>
+
+<h2 id="preparing-the-data">Preparing the data</h2>
+
+<p>The first step to fitting this model is to prepare the data. For this,
+we need to first convert the ranking data into pairs data. To do this, I
+will use a custom function in a package I am developing called
+<code class="language-plaintext highlighter-rouge">thurStEM</code> (you can find the code
+<a href="https://github.com/Dusty-Gannon/thurStEM">here</a> and download as a
+package using <code class="language-plaintext highlighter-rouge">devtools::install_github()</code>).</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="n">tidyverse</span><span class="p">)</span><span class="w">
+</span><span class="n">library</span><span class="p">(</span><span class="n">thurStEM</span><span class="p">)</span><span class="w">
+
+</span><span class="n">head</span><span class="p">(</span><span class="n">rank_dat</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>##   trail_maintenance new_trails invasives thinning  group
+## 1                 3          2         1        4 hikers
+## 2                 3          1         2        4 hikers
+## 3                 2          1         3        4 hikers
+## 4                 3          1         2        4 hikers
+## 5                 1          4         3        2 hikers
+## 6                 1          3         4        2 hikers
+</code></pre></div></div>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># convert to pairs data</span><span class="w">
+</span><span class="n">pairs_dat</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">ranks_as_pairs</span><span class="p">(</span><span class="n">rank_dat</span><span class="p">,</span><span class="w"> </span><span class="n">cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="o">:</span><span class="m">4</span><span class="p">)</span><span class="w">
+
+</span><span class="n">head</span><span class="p">(</span><span class="n">pairs_dat</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>##   trail_maintenance_before_new_trails trail_maintenance_before_invasives
+## 1                                   0                                  0
+## 2                                   0                                  0
+## 3                                   0                                  1
+## 4                                   0                                  0
+## 5                                   1                                  1
+## 6                                   1                                  1
+##   trail_maintenance_before_thinning new_trails_before_invasives
+## 1                                 1                           0
+## 2                                 1                           1
+## 3                                 1                           1
+## 4                                 1                           1
+## 5                                 1                           0
+## 6                                 1                           1
+##   new_trails_before_thinning invasives_before_thinning  group
+## 1                          1                         1 hikers
+## 2                          1                         1 hikers
+## 3                          1                         1 hikers
+## 4                          1                         1 hikers
+## 5                          0                         0 hikers
+## 6                          0                         0 hikers
+</code></pre></div></div>
+
+<p>We can see how the function labels the new columns, which is meant to be
+clear and informative, but for the sake of easier typing later, I’m
+going to rename them.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pairs_dat</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">pairs_dat</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span><span class="n">rename</span><span class="p">(</span><span class="w">
+  </span><span class="n">i1i2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">trail_maintenance_before_new_trails</span><span class="p">,</span><span class="w">
+  </span><span class="n">i1i3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">trail_maintenance_before_invasives</span><span class="p">,</span><span class="w">
+  </span><span class="n">i1i4</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">trail_maintenance_before_thinning</span><span class="p">,</span><span class="w">
+  </span><span class="n">i2i3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">new_trails_before_invasives</span><span class="p">,</span><span class="w">
+  </span><span class="n">i2i4</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">new_trails_before_thinning</span><span class="p">,</span><span class="w">
+  </span><span class="n">i3i4</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">invasives_before_thinning</span><span class="w">
+</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>The next step is to convert the explanatory variable, <code class="language-plaintext highlighter-rouge">group</code>, into
+something <code class="language-plaintext highlighter-rouge">lavaan</code> can work with, which is just converting the factor
+into a matrix of indicator variables indicating if respondent \(i\)
+belongs to group \(g\). We will bind these indicator variables to the
+pairs data for use with <code class="language-plaintext highlighter-rouge">lavaan</code>.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># create the dummy variables</span><span class="w">
+</span><span class="n">X</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">model.matrix</span><span class="p">(</span><span class="o">~</span><span class="w"> </span><span class="n">group</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pairs_dat</span><span class="p">)</span><span class="w">
+</span><span class="n">head</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>##   (Intercept) grouphunters groupmtbikers
+## 1           1            0             0
+## 2           1            0             0
+## 3           1            0             0
+## 4           1            0             0
+## 5           1            0             0
+## 6           1            0             0
+</code></pre></div></div>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># bind the second and third columns to the data</span><span class="w">
+</span><span class="n">pairs_dat</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">pairs_dat</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
+  </span><span class="n">mutate</span><span class="p">(</span><span class="w">
+    </span><span class="n">grp_hunt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">X</span><span class="p">[,</span><span class="w"> </span><span class="s2">"grouphunters"</span><span class="p">],</span><span class="w">
+    </span><span class="n">grp_bike</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">X</span><span class="p">[,</span><span class="w"> </span><span class="s2">"groupmtbikers"</span><span class="p">]</span><span class="w">
+  </span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Note that we did not bind the first column of the model matrix to the
+data. The first column is the intercept, which represents the mean
+latent vector \(\mu\) when in the reference group of hikers. Including
+this in our data and model definition would lead to identifiability
+issues.</p>
+
+<p>The final thing we need to do to prepare the data is ensure that the
+columns defining the binary pairs data are of class <code class="language-plaintext highlighter-rouge">"ordered"</code> so that
+<code class="language-plaintext highlighter-rouge">lavaan</code> treats them as categorical and not numeric.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pairs_dat</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">pairs_dat</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
+  </span><span class="n">mutate</span><span class="p">(</span><span class="w">
+    </span><span class="n">across</span><span class="p">(</span><span class="n">i1i2</span><span class="o">:</span><span class="n">i3i4</span><span class="p">,</span><span class="w"> </span><span class="n">.fns</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">as.ordered</span><span class="p">)</span><span class="w">
+  </span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="fitting-the-model">Fitting the model</h2>
+
+<p>We can now create the model definition using <a href="https://lavaan.ugent.be/tutorial/syntax1.html"><code class="language-plaintext highlighter-rouge">lavaan</code>
+syntax</a>. As a first step,
+let’s define the <em>regression</em> component in which the latent means are
+modeled as a function of the grouping variable, <code class="language-plaintext highlighter-rouge">group</code>. The syntax here
+is likely familiar to R users.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="n">lavaan</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>## This is lavaan 0.6-18
+## lavaan is FREE software! Please report any bugs.
+</code></pre></div></div>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># notice the single quotes for all the model components</span><span class="w">
+</span><span class="n">reg</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s1">'
+  item_1 ~ 1 + grp_hunt + grp_bike
+  item_2 ~ 1 + grp_hunt + grp_bike
+  item_3 ~ 1 + grp_hunt + grp_bike
+  item_4 ~ 0 * 1
+'</span><span class="w">
+</span></code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">grp_hunt</code> and <code class="language-plaintext highlighter-rouge">grp_bike</code> variables are the indicator variables we
+created above while we can name the latent variables whatever we like. I
+chose <code class="language-plaintext highlighter-rouge">item_k</code> to keep the terminology consistent. Notice that we
+include the <code class="language-plaintext highlighter-rouge">~ 1</code> terminology to specify the intercept, and premultiply
+it by 0 in the last line to constrain the mean of the utility
+distribution of <code class="language-plaintext highlighter-rouge">item_4</code> to zero. Note this constraint applies
+regardless of the group since the group definitions should just affect
+the spacing among the latent means.</p>
+
+<p>The next step is to define the <em>indicator</em> section (not to be confused
+with indicator variables), which specifies how the latent variables are
+measured. In our case, they are measured by the pairs data with specific
+constraints on the factor loadings. Constraints can be placed on nearly
+any <code class="language-plaintext highlighter-rouge">lavaan</code> model component by <em>premultiplying</em> it by the constraint.
+Here, we set the constraints on the factor loadings using based on the
+design matrix \(\bf A\).</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">meas</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s1">'
+  item_1 =~ 1 * i1i2 + 1 * i1i3 + 1 * i1i4
+  item_2 =~ -1 * i1i2 + 1 * i2i3 + 1 * i2i4
+  item_3 =~ -1 * i1i3 + -1 * i2i3 + 1 * i3i4
+  item_4 =~ -1 * i1i4 + -1 * i2i4 + -1 * i3i4
+'</span><span class="w">
+</span></code></pre></div></div>
+
+<p>This model block defines the factor loadings based on the columns of
+\(\bf A\), and reflects the structure of Figure
+<a href="#fig:sem">2</a>. Omitting the loadings with constraints to zero
+as I have done here is the same as explicitely constraining them to zero
+in the model definition.</p>
+
+<p>Finally, we can place the necessary constraints on the (co)variances,
+and fit the model. This is done using the <code class="language-plaintext highlighter-rouge">~~</code> syntax in <code class="language-plaintext highlighter-rouge">lavaan</code>.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">covars</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s1">'
+  # constrain variances to one
+  item_1 ~~ 1 * item_1
+  item_2 ~~ 1 * item_2
+  item_3 ~~ 1 * item_3
+  item_4 ~~ 0 * item_4
+  
+  # now constrain the covariances to zero
+  item_1 ~~ 0 * item_2
+  item_1 ~~ 0 * item_3
+  item_1 ~~ 0 * item_4
+  item_2 ~~ 0 * item_3
+  item_2 ~~ 0 * item_4
+  item_3 ~~ 0 * item_4
+'</span><span class="w">
+</span></code></pre></div></div>
+
+<p>We can now fit the model using the <code class="language-plaintext highlighter-rouge">lavaan()</code> function, being sure to
+include a couple of somewhat obscure flags and arguments.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">mfit</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">lavaan</span><span class="p">(</span><span class="w">
+  </span><span class="n">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="n">reg</span><span class="p">,</span><span class="w"> </span><span class="n">meas</span><span class="p">,</span><span class="w"> </span><span class="n">covars</span><span class="p">),</span><span class="w">
+  </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pairs_dat</span><span class="p">,</span><span class="w">
+  </span><span class="n">int.lv.free</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">T</span><span class="p">,</span><span class="w">
+  </span><span class="n">ordered</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">names</span><span class="p">(</span><span class="n">pairs_dat</span><span class="p">)[</span><span class="m">1</span><span class="o">:</span><span class="m">6</span><span class="p">],</span><span class="w">
+  </span><span class="n">parameterization</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"theta"</span><span class="p">,</span><span class="w">
+  </span><span class="n">meanstructure</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">T</span><span class="w">
+</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="interpretting-the-fitted-model">Interpretting the fitted model</h2>
 
 <h2 id="references">References</h2>
 

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.3">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2024-08-06T12:25:57-07:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Dusty Gannon</title><subtitle>Website and blog for Dusty Gannon, statistical consultant and ecologist.</subtitle><author><name>Dusty Gannon</name></author><entry><title type="html">A tutorial on analyzing ranking data</title><link href="http://localhost:4000/common/issues/thurstone_tutorial/" rel="alternate" type="text/html" title="A tutorial on analyzing ranking data" /><published>2024-07-01T00:00:00-07:00</published><updated>2024-07-01T00:00:00-07:00</updated><id>http://localhost:4000/common/issues/thurstone_tutorial</id><content type="html" xml:base="http://localhost:4000/common/issues/thurstone_tutorial/"># Ranking data
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.3">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2024-08-07T17:52:51-07:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Dusty Gannon</title><subtitle>Website and blog for Dusty Gannon, statistical consultant and ecologist.</subtitle><author><name>Dusty Gannon</name></author><entry><title type="html">A tutorial on analyzing ranking data</title><link href="http://localhost:4000/common/issues/thurstone_tutorial/" rel="alternate" type="text/html" title="A tutorial on analyzing ranking data" /><published>2024-07-01T00:00:00-07:00</published><updated>2024-07-01T00:00:00-07:00</updated><id>http://localhost:4000/common/issues/thurstone_tutorial</id><content type="html" xml:base="http://localhost:4000/common/issues/thurstone_tutorial/"># Ranking data
 
 Ranking data are common in survey-based research. Ranking data arise from survey questions in which a respondent is asked to rank a set of items by their priority or preference in the view of the respondent. I have recently encountered this type of data in my consulting practice and discovered that there is a relative paucity of approachable material available on analyzing these data, particularly when the research questions involve differences among populations of interest or covariates that could drive different rankings. This post is meant to act as a guide for graduate-level readers and above, with code for fitting the popular Thurstone Case V model with the potential for covariates using R package &lt;a class=&quot;citation&quot; href=&quot;#lavaan&quot;&gt;(Rosseel, 2012)&lt;/a&gt;. I include some of the mathematical details for interested readers, but I point to recently developed R packages (shamelessly promoting one I am developing as well) that do not require understanding of all the nuts and bolts.
 
@@ -169,16 +169,187 @@ Assuming a joint normal distribution for $$\bf U$$ allows us to know the distrib
 
 ## Thurstone models as SEMs
 
-Using the setup from above using the paired data to give information on the relative distances among the means of the utility distributions, we can represent Thurstone models as structural equation models (SEMs; Figure \@ref(fig:sem)).
+Using the setup from above with the paired data to give information on the relative distances among the means of the utility distributions, we can represent Thurstone models as structural equation models (SEMs; Figure \@ref(fig:sem)). The latent factors of the SEM are the utilities, which we assume to have a multivariate normal distribution with certain constraints. These utility distributions are measured by the pairwise differences in their means, of which there are $$K\choose 2$$ unique differences. If we let $$\bf A$$ be the design matrix mapping a vector of means $$\boldsymbol \mu$$ to their pairwise differences, we have the model
 
-```{r sem, out.width=&quot;100%&quot;, fig.cap=&quot;Path diagram of the Thurstone case V model cast as a SEM. All path coefficients from the latent means to the differences \\(d_{ij}\\) are fixed at either 1 (black arrow) or -1, (red arrow). The exogenous variables, $$y_{ij}$$ are the pairs data, taking the value 1 if item $$i$$ was ranked ahead of item $$j$$ and 0 otherwise. These exogenous variables are linked to the latent differences through the probit link function, denoted $$\\Phi()$$. The $$z_{ij}$$'s are the standardized latent differences.&quot;}
+$$
+{\boldsymbol \delta} = {\bf A} \boldsymbol\mu.
+$$
+
+As an example, the design matrix for our example with four items and their respective population utility distributions, the design matrix will take the form
+
+$$
+{\bf A} = \begin{bmatrix}
+1 &amp; -1 &amp; 0 &amp; 0\\
+1 &amp; 0 &amp; -1 &amp; 0\\
+1 &amp; 0 &amp; 0 &amp; -1\\
+0 &amp; 1 &amp; -1 &amp; 0\\
+0 &amp; 1 &amp; 0 &amp; -1\\
+0 &amp; 0 &amp; 1 &amp; -1\\
+\end{bmatrix}
+$$
+
+with each row representing a difference between two of the means in the vector of four. The vector of differences is then linked to the binary pairs data,
+
+$$
+y_{ij} = \begin{cases}
+1 &amp; \text{if } u_i &lt; u_j\\
+0 &amp; \text{otherwise}
+\end{cases}
+$$
+
+through the [probit](https://en.wikipedia.org/wiki/Probit_model) link function. Specifically, if we let 
+
+$$
+{\bf z} = {\bf D}({\bf d} - {\boldsymbol \delta})
+$$
+
+be the standardized vector of a set of realized differences, $$\bf d$$, with $${\bf D} = \text{diag}({\bf A}{\boldsymbol \Sigma}{\bf A}^\top)^{-1/2}$$ as the diagonal matrix of the inverse standard deviations of the differences, then the pairs data are related to the latent means through what's known as the *threshold relationship* &lt;a class=&quot;citation&quot; href=&quot;#maydeu-olivares_SEM_2005&quot;&gt;(Maydeu-Olivares &amp;amp; Böckenholt, 2005)&lt;/a&gt;. Specifically,
+
+$$
+y_{ij} = \begin{cases}
+1 &amp; \text{if } z_{ij} \ge \tau_{ij}\\
+0 &amp; \text{if } z_{ij} &lt; \tau_{ij}\\
+\end{cases}
+$$
+
+where $${\boldsymbol \tau} = -{\bf DA}{\boldsymbol \mu}$$ is the vector of thresholds.
+
+As discussed above, the final component of formulating the Thurstone Case V model as a SEM is to impose the constraints necessary for identifiability. First, note that $$\bf A$$ is the factor loadings matrix which is completely known in this case. Second, we need to specify the variances and covariances of the latent factors (the utilities), which, for the Case V model, we assume equal variances and covariances equal to zero. Note that the exact value of the variances is arbitrary since we can always find means, $$\mu_1, \mu_2, \mu_1'$$ and $$\mu_2'$$ such that $$P(X_1 &lt; X_2 | \mu_1, \mu_2, \sigma_1^2) = P(Y_1 &lt; Y_2 | \mu_1', \mu_2', \sigma_2^2)$$ for any specified $$\sigma_1^2$$ and $$\sigma_2^2$$ and $$X_1, X_2, Y_1, Y_2$$ mutually independent. We therefore usually set $$\sigma^2 = 1$$ for convenience. Finally, we need to fix one of the latent means to some arbitrary value. As mentioned above, we usually set $$\mu_K = 0$$, arbitrarily.  
+
+```{r sem, echo = FALSE, out.width=&quot;100%&quot;, fig.cap=&quot;Path diagram of the Thurstone case V model cast as a SEM. All path coefficients from the latent means to the differences $$d_{ij}$$ are fixed at either 1 (black arrow) or -1, (red arrow). The exogenous variables, $$y_{ij}$$ are the pairs data, taking the value 1 if item $$i$$ was ranked ahead of item $$j$$ and 0 otherwise. These exogenous variables are linked to the latent differences through the probit link function, denoted $$\\Phi()$$. The $$z_{ij}$$'s are the standardized latent differences.&quot;}
 knitr::include_graphics(
   here::here(&quot;assets/images/thurstone_blog/thurstone5_sem.png&quot;)
 )
 ```
 
+# Fitting the model with `lavaan`
+
+Okay, now that the model description is out of the way, let's finally learn how to fit this model in R! We will use the SEM software package `lavaan` for this, which is very flexible and has many convenient features. We will be using some infrequently used fitting options and arguments, which is part of what prompted me to create this post. It took me a while to figure out how to get `lavaan` to do what I wanted, so I thought this might be helpful to others out there with ranking data.
+
+## Preparing the data
+
+The first step to fitting this model is to prepare the data. For this, we need to first convert the ranking data into pairs data. To do this, I will use a custom function in a package I am developing called `thurStEM` (you can find the code [here](https://github.com/Dusty-Gannon/thurStEM) and download as a package using `devtools::install_github()`). 
+
+```{r message=FALSE}
+library(tidyverse)
+library(thurStEM)
+
+head(rank_dat)
+
+# convert to pairs data
+pairs_dat &lt;- ranks_as_pairs(rank_dat, cols = 1:4)
+
+head(pairs_dat)
+
+```
+
+We can see how the function labels the new columns, which is meant to be clear and informative, but for the sake of easier typing later, I'm going to rename them.
+
+```{r}
+pairs_dat &lt;- pairs_dat %&gt;% rename(
+  i1i2 = trail_maintenance_before_new_trails,
+  i1i3 = trail_maintenance_before_invasives,
+  i1i4 = trail_maintenance_before_thinning,
+  i2i3 = new_trails_before_invasives,
+  i2i4 = new_trails_before_thinning,
+  i3i4 = invasives_before_thinning
+)
+```
 
 
+
+The next step is to convert the explanatory variable, `group`, into something `lavaan` can work with, which is just converting the factor into a matrix of indicator variables indicating if respondent $$i$$ belongs to group $$g$$. We will bind these indicator variables to the pairs data for use with `lavaan`.
+
+```{r}
+# create the dummy variables
+X &lt;- model.matrix(~ group, data = pairs_dat)
+head(X)
+
+# bind the second and third columns to the data
+pairs_dat &lt;- pairs_dat %&gt;%
+  mutate(
+    grp_hunt = X[, &quot;grouphunters&quot;],
+    grp_bike = X[, &quot;groupmtbikers&quot;]
+  )
+
+```
+
+Note that we did not bind the first column of the model matrix to the data. The first column is the intercept, which represents the mean latent vector $$\mu$$ when in the reference group of hikers. Including this in our data and model definition would lead to identifiability issues.
+
+The final thing we need to do to prepare the data is ensure that the columns defining the binary pairs data are of class `&quot;ordered&quot;` so that `lavaan` treats them as categorical and not numeric.
+
+```{r}
+pairs_dat &lt;- pairs_dat %&gt;%
+  mutate(
+    across(i1i2:i3i4, .fns = as.ordered)
+  )
+```
+
+
+## Fitting the model
+
+We can now create the model definition using [`lavaan` syntax](https://lavaan.ugent.be/tutorial/syntax1.html). As a first step, let's define the *regression* component in which the latent means are modeled as a function of the grouping variable, `group`. The syntax here is likely familiar to R users.
+
+```{r}
+library(lavaan)
+# notice the single quotes for all the model components
+reg &lt;- '
+  item_1 ~ 1 + grp_hunt + grp_bike
+  item_2 ~ 1 + grp_hunt + grp_bike
+  item_3 ~ 1 + grp_hunt + grp_bike
+  item_4 ~ 0 * 1
+'
+```
+
+The `grp_hunt` and `grp_bike` variables are the indicator variables we created above while we can name the latent variables whatever we like. I chose `item_k` to keep the terminology consistent. Notice that we include the `~ 1` terminology to specify the intercept, and premultiply it by 0 in the last line to constrain the mean of the utility distribution of `item_4` to zero. Note this constraint applies regardless of the group since the group definitions should just affect the spacing among the latent means.
+
+The next step is to define the *indicator* section (not to be confused with indicator variables), which specifies how the latent variables are measured. In our case, they are measured by the pairs data with specific constraints on the factor loadings. Constraints can be placed on nearly any `lavaan` model component by *premultiplying* it by the constraint. Here, we set the constraints on the factor loadings using based on the design matrix $$\bf A$$.
+
+```{r}
+meas &lt;- '
+  item_1 =~ 1 * i1i2 + 1 * i1i3 + 1 * i1i4
+  item_2 =~ -1 * i1i2 + 1 * i2i3 + 1 * i2i4
+  item_3 =~ -1 * i1i3 + -1 * i2i3 + 1 * i3i4
+  item_4 =~ -1 * i1i4 + -1 * i2i4 + -1 * i3i4
+'
+```
+
+This model block defines the factor loadings based on the columns of $$\bf A$$, and reflects the structure of Figure \@ref(fig:sem). Omitting the loadings with constraints to zero as I have done here is the same as explicitely constraining them to zero in the model definition.
+
+Finally, we can place the necessary constraints on the (co)variances, and fit the model. This is done using the `~~` syntax in `lavaan`.
+
+```{r}
+covars &lt;- '
+  # constrain variances to one
+  item_1 ~~ 1 * item_1
+  item_2 ~~ 1 * item_2
+  item_3 ~~ 1 * item_3
+  item_4 ~~ 0 * item_4
+  
+  # now constrain the covariances to zero
+  item_1 ~~ 0 * item_2
+  item_1 ~~ 0 * item_3
+  item_1 ~~ 0 * item_4
+  item_2 ~~ 0 * item_3
+  item_2 ~~ 0 * item_4
+  item_3 ~~ 0 * item_4
+'
+```
+
+We can now fit the model using the `lavaan()` function, being sure to include a couple of somewhat obscure flags and arguments.
+
+```{r}
+mfit &lt;- lavaan(
+  model = c(reg, meas, covars),
+  data = pairs_dat,
+  int.lv.free = T,
+  ordered = names(pairs_dat)[1:6],
+  parameterization = &quot;theta&quot;,
+  meanstructure = T
+)
+```
+
+## Interpretting the fitted model
 
 
 
@@ -242,23 +413,9 @@ representative samples of the populations of interest.&lt;/p&gt;
   &lt;tbody&gt;
     &lt;tr&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
-      &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
-      &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
       &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
@@ -269,17 +426,31 @@ representative samples of the populations of interest.&lt;/p&gt;
       &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
       &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;3&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;4&lt;/td&gt;
       &lt;td style=&quot;text-align: right&quot;&gt;2&lt;/td&gt;
-      &lt;td style=&quot;text-align: right&quot;&gt;1&lt;/td&gt;
       &lt;td style=&quot;text-align: left&quot;&gt;hikers&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
@@ -431,7 +602,7 @@ distributions?&lt;/p&gt;
 
 &lt;div class=&quot;figure&quot; style=&quot;text-align: center&quot;&gt;
 
-&lt;img src=&quot;../assets/images/thurstone_blog/densities_final.png&quot; alt=&quot;Conceptual figure of the Thurstone model following the example given in the text.&quot; width=&quot;60%&quot; /&gt;
+&lt;img src=&quot;/assets/images/thurstone_blog/densities_final.png&quot; width=&quot;60%&quot; /&gt;
 &lt;p class=&quot;caption&quot;&gt;
 &lt;span id=&quot;fig:concept-fig&quot;&gt;&lt;/span&gt;Figure 1: Conceptual figure of the
 Thurstone model following the example given in the text.
@@ -511,22 +682,83 @@ depends on the spacing among the means (Figure
 &lt;a href=&quot;#fig:concept-fig&quot;&gt;1&lt;/a&gt;) and the covariance structure. For the
 purposes of this post, I only discuss the model for which the utilities
 are assumed independent with equal variance such that the covariance
-matrix \(\boldsymbol \Sigma = \sigma^2{\bf I}_K\), where \({\bf I}_K\) is
+matrix \(\boldsymbol \Sigma = \sigma^2{\bf I}_K\), where ${\bf I}_K$ is
 the \(K\times K\) identity matrix. This is known as the &lt;em&gt;Thurstone Case
 V&lt;/em&gt; model, and is the simplest (but most constrained case due to the
 constraints on the covariance matrix) (missing reference).&lt;/p&gt;
 
 &lt;h2 id=&quot;thurstone-models-as-sems&quot;&gt;Thurstone models as SEMs&lt;/h2&gt;
 
-&lt;p&gt;Using the setup from above using the paired data to give information on
+&lt;p&gt;Using the setup from above with the paired data to give information on
 the relative distances among the means of the utility distributions, we
 can represent Thurstone models as structural equation models (SEMs;
-Figure &lt;a href=&quot;#fig:sem&quot;&gt;2&lt;/a&gt;).&lt;/p&gt;
+Figure &lt;a href=&quot;#fig:sem&quot;&gt;2&lt;/a&gt;). The latent factors of the SEM are the
+utilities, which we assume to have a multivariate normal distribution
+with certain constraints. These utility distributions are measured by
+the pairwise differences in their means, of which there are
+\(K\choose 2\) unique differences. If we let \(\bf A\) be the design
+matrix mapping a vector of means \(\boldsymbol \mu\) to their pairwise
+differences, we have the model&lt;/p&gt;
 
-&lt;div class=&quot;language-r highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;knitr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;include_graphics&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-  &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;here&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;here&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;assets/images/thurstone_blog/thurstone5_sem.png&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+\[{\boldsymbol \delta} = {\bf A} \boldsymbol\mu.\]
+
+&lt;p&gt;As an example, the design matrix for our example with four items and
+their respective population utility distributions, the design matrix
+will take the form&lt;/p&gt;
+
+\[{\bf A} = \begin{bmatrix}
+1 &amp;amp; -1 &amp;amp; 0 &amp;amp; 0\\
+1 &amp;amp; 0 &amp;amp; -1 &amp;amp; 0\\
+1 &amp;amp; 0 &amp;amp; 0 &amp;amp; -1\\
+0 &amp;amp; 1 &amp;amp; -1 &amp;amp; 0\\
+0 &amp;amp; 1 &amp;amp; 0 &amp;amp; -1\\
+0 &amp;amp; 0 &amp;amp; 1 &amp;amp; -1\\
+\end{bmatrix}\]
+
+&lt;p&gt;with each row representing a difference between two of the means in the
+vector of four. The vector of differences is then linked to the binary
+pairs data,&lt;/p&gt;
+
+\[y_{ij} = \begin{cases}
+1 &amp;amp; \text{if } u_i &amp;lt; u_j\\
+0 &amp;amp; \text{otherwise}
+\end{cases}\]
+
+&lt;p&gt;through the &lt;a href=&quot;https://en.wikipedia.org/wiki/Probit_model&quot;&gt;probit&lt;/a&gt; link
+function. Specifically, if we let&lt;/p&gt;
+
+\[{\bf z} = {\bf D}({\bf d} - {\boldsymbol \delta})\]
+
+&lt;p&gt;be the standardized vector of a set of realized differences, \(\bf d\),
+with
+\({\bf D} = \text{diag}({\bf A}{\boldsymbol \Sigma}{\bf A}^\top)^{-1/2}\)
+as the diagonal matrix of the inverse standard deviations of the
+differences, then the pairs data are related to the latent means through
+what’s known as the &lt;em&gt;threshold relationship&lt;/em&gt; &lt;a class=&quot;citation&quot; href=&quot;#maydeu-olivares_SEM_2005&quot;&gt;(Maydeu-Olivares &amp;amp; Böckenholt, 2005)&lt;/a&gt;. Specifically,&lt;/p&gt;
+
+\[y_{ij} = \begin{cases}
+1 &amp;amp; \text{if } z_{ij} \ge \tau_{ij}\\
+0 &amp;amp; \text{if } z_{ij} &amp;lt; \tau_{ij}\\
+\end{cases}\]
+
+&lt;p&gt;where \({\boldsymbol \tau} = -{\bf DA}{\boldsymbol \mu}\) is the vector
+of thresholds.&lt;/p&gt;
+
+&lt;p&gt;As discussed above, the final component of formulating the Thurstone
+Case V model as a SEM is to impose the constraints necessary for
+identifiability. First, note that \(\bf A\) is the factor loadings
+matrix which is completely known in this case. Second, we need to
+specify the variances and covariances of the latent factors (the
+utilities), which, for the Case V model, we assume equal variances and
+covariances equal to zero. Note that the exact value of the variances is
+arbitrary since we can always find means, \(\mu_1, \mu_2, \mu_1'\) and
+\(\mu_2'\) such that
+\(P(X_1 &amp;lt; X_2 | \mu_1, \mu_2, \sigma_1^2) = P(Y_1 &amp;lt; Y_2 | \mu_1', \mu_2', \sigma_2^2)\)
+for any specified \(\sigma_1^2\) and \(\sigma_2^2\) and
+\(X_1, X_2, Y_1, Y_2\) mutually independent. We therefore usually set
+\(\sigma^2 = 1\) for convenience. Finally, we need to fix one of the
+latent means to some arbitrary value. As mentioned above, we usually set
+\(\mu_K = 0\), arbitrarily.&lt;/p&gt;
 
 &lt;div class=&quot;figure&quot;&gt;
 
@@ -536,13 +768,225 @@ Figure &lt;a href=&quot;#fig:sem&quot;&gt;2&lt;/a&gt;).&lt;/p&gt;
 model cast as a SEM. All path coefficients from the latent means to the
 differences \(d_{ij}\) are fixed at either 1 (black arrow) or -1, (red
 arrow). The exogenous variables, \(y_{ij}\) are the pairs data, taking
-the value 1 if item $$i$$ was ranked ahead of item $$j$$ and 0
+the value 1 if item \(i\) was ranked ahead of item \(j\) and 0
 otherwise. These exogenous variables are linked to the latent
-differences through the probit link function, denoted $$\Phi()$$. The
-$$z_{ij}$$’s are the standardized latent differences.
+differences through the probit link function, denoted \(\Phi()\). The
+\(z_{ij}\)’s are the standardized latent differences.
 &lt;/p&gt;
 
 &lt;/div&gt;
+
+&lt;h1 id=&quot;fitting-the-model-with-lavaan&quot;&gt;Fitting the model with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;lavaan&lt;/code&gt;&lt;/h1&gt;
+
+&lt;p&gt;Okay, now that the model description is out of the way, let’s finally
+learn how to fit this model in R! We will use the SEM software package
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;lavaan&lt;/code&gt; for this, which is very flexible and has many convenient
+features. We will be using some infrequently used fitting options and
+arguments, which is part of what prompted me to create this post. It
+took me a while to figure out how to get &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;lavaan&lt;/code&gt; to do what I wanted,
+so I thought this might be helpful to others out there with ranking
+data.&lt;/p&gt;
+
+&lt;h2 id=&quot;preparing-the-data&quot;&gt;Preparing the data&lt;/h2&gt;
+
+&lt;p&gt;The first step to fitting this model is to prepare the data. For this,
+we need to first convert the ranking data into pairs data. To do this, I
+will use a custom function in a package I am developing called
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;thurStEM&lt;/code&gt; (you can find the code
+&lt;a href=&quot;https://github.com/Dusty-Gannon/thurStEM&quot;&gt;here&lt;/a&gt; and download as a
+package using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;devtools::install_github()&lt;/code&gt;).&lt;/p&gt;
+
+&lt;div class=&quot;language-r highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;library&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tidyverse&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;library&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;thurStEM&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;head&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;rank_dat&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;##   trail_maintenance new_trails invasives thinning  group
+## 1                 3          2         1        4 hikers
+## 2                 3          1         2        4 hikers
+## 3                 2          1         3        4 hikers
+## 4                 3          1         2        4 hikers
+## 5                 1          4         3        2 hikers
+## 6                 1          3         4        2 hikers
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-r highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;# convert to pairs data&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pairs_dat&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ranks_as_pairs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;rank_dat&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cols&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;head&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pairs_dat&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;##   trail_maintenance_before_new_trails trail_maintenance_before_invasives
+## 1                                   0                                  0
+## 2                                   0                                  0
+## 3                                   0                                  1
+## 4                                   0                                  0
+## 5                                   1                                  1
+## 6                                   1                                  1
+##   trail_maintenance_before_thinning new_trails_before_invasives
+## 1                                 1                           0
+## 2                                 1                           1
+## 3                                 1                           1
+## 4                                 1                           1
+## 5                                 1                           0
+## 6                                 1                           1
+##   new_trails_before_thinning invasives_before_thinning  group
+## 1                          1                         1 hikers
+## 2                          1                         1 hikers
+## 3                          1                         1 hikers
+## 4                          1                         1 hikers
+## 5                          0                         0 hikers
+## 6                          0                         0 hikers
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We can see how the function labels the new columns, which is meant to be
+clear and informative, but for the sake of easier typing later, I’m
+going to rename them.&lt;/p&gt;
+
+&lt;div class=&quot;language-r highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;pairs_dat&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pairs_dat&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;%&amp;gt;%&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;rename&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i1i2&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;trail_maintenance_before_new_trails&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i1i3&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;trail_maintenance_before_invasives&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i1i4&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;trail_maintenance_before_thinning&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i2i3&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;new_trails_before_invasives&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i2i4&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;new_trails_before_thinning&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i3i4&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;invasives_before_thinning&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The next step is to convert the explanatory variable, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;group&lt;/code&gt;, into
+something &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;lavaan&lt;/code&gt; can work with, which is just converting the factor
+into a matrix of indicator variables indicating if respondent \(i\)
+belongs to group \(g\). We will bind these indicator variables to the
+pairs data for use with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;lavaan&lt;/code&gt;.&lt;/p&gt;
+
+&lt;div class=&quot;language-r highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;# create the dummy variables&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;model.matrix&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;~&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;group&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pairs_dat&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;head&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;##   (Intercept) grouphunters groupmtbikers
+## 1           1            0             0
+## 2           1            0             0
+## 3           1            0             0
+## 4           1            0             0
+## 5           1            0             0
+## 6           1            0             0
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-r highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;# bind the second and third columns to the data&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pairs_dat&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pairs_dat&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;%&amp;gt;%&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mutate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;grp_hunt&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;grouphunters&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;grp_bike&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;groupmtbikers&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Note that we did not bind the first column of the model matrix to the
+data. The first column is the intercept, which represents the mean
+latent vector \(\mu\) when in the reference group of hikers. Including
+this in our data and model definition would lead to identifiability
+issues.&lt;/p&gt;
+
+&lt;p&gt;The final thing we need to do to prepare the data is ensure that the
+columns defining the binary pairs data are of class &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&quot;ordered&quot;&lt;/code&gt; so that
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;lavaan&lt;/code&gt; treats them as categorical and not numeric.&lt;/p&gt;
+
+&lt;div class=&quot;language-r highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;pairs_dat&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pairs_dat&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;%&amp;gt;%&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mutate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;across&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i1i2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i3i4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;.fns&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;as.ordered&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;fitting-the-model&quot;&gt;Fitting the model&lt;/h2&gt;
+
+&lt;p&gt;We can now create the model definition using &lt;a href=&quot;https://lavaan.ugent.be/tutorial/syntax1.html&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;lavaan&lt;/code&gt;
+syntax&lt;/a&gt;. As a first step,
+let’s define the &lt;em&gt;regression&lt;/em&gt; component in which the latent means are
+modeled as a function of the grouping variable, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;group&lt;/code&gt;. The syntax here
+is likely familiar to R users.&lt;/p&gt;
+
+&lt;div class=&quot;language-r highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;library&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lavaan&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;## This is lavaan 0.6-18
+## lavaan is FREE software! Please report any bugs.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-r highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;# notice the single quotes for all the model components&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;reg&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'
+  item_1 ~ 1 + grp_hunt + grp_bike
+  item_2 ~ 1 + grp_hunt + grp_bike
+  item_3 ~ 1 + grp_hunt + grp_bike
+  item_4 ~ 0 * 1
+'&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;grp_hunt&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;grp_bike&lt;/code&gt; variables are the indicator variables we
+created above while we can name the latent variables whatever we like. I
+chose &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;item_k&lt;/code&gt; to keep the terminology consistent. Notice that we
+include the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;~ 1&lt;/code&gt; terminology to specify the intercept, and premultiply
+it by 0 in the last line to constrain the mean of the utility
+distribution of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;item_4&lt;/code&gt; to zero. Note this constraint applies
+regardless of the group since the group definitions should just affect
+the spacing among the latent means.&lt;/p&gt;
+
+&lt;p&gt;The next step is to define the &lt;em&gt;indicator&lt;/em&gt; section (not to be confused
+with indicator variables), which specifies how the latent variables are
+measured. In our case, they are measured by the pairs data with specific
+constraints on the factor loadings. Constraints can be placed on nearly
+any &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;lavaan&lt;/code&gt; model component by &lt;em&gt;premultiplying&lt;/em&gt; it by the constraint.
+Here, we set the constraints on the factor loadings using based on the
+design matrix \(\bf A\).&lt;/p&gt;
+
+&lt;div class=&quot;language-r highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;meas&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'
+  item_1 =~ 1 * i1i2 + 1 * i1i3 + 1 * i1i4
+  item_2 =~ -1 * i1i2 + 1 * i2i3 + 1 * i2i4
+  item_3 =~ -1 * i1i3 + -1 * i2i3 + 1 * i3i4
+  item_4 =~ -1 * i1i4 + -1 * i2i4 + -1 * i3i4
+'&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This model block defines the factor loadings based on the columns of
+\(\bf A\), and reflects the structure of Figure
+&lt;a href=&quot;#fig:sem&quot;&gt;2&lt;/a&gt;. Omitting the loadings with constraints to zero
+as I have done here is the same as explicitely constraining them to zero
+in the model definition.&lt;/p&gt;
+
+&lt;p&gt;Finally, we can place the necessary constraints on the (co)variances,
+and fit the model. This is done using the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;~~&lt;/code&gt; syntax in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;lavaan&lt;/code&gt;.&lt;/p&gt;
+
+&lt;div class=&quot;language-r highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;covars&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'
+  # constrain variances to one
+  item_1 ~~ 1 * item_1
+  item_2 ~~ 1 * item_2
+  item_3 ~~ 1 * item_3
+  item_4 ~~ 0 * item_4
+  
+  # now constrain the covariances to zero
+  item_1 ~~ 0 * item_2
+  item_1 ~~ 0 * item_3
+  item_1 ~~ 0 * item_4
+  item_2 ~~ 0 * item_3
+  item_2 ~~ 0 * item_4
+  item_3 ~~ 0 * item_4
+'&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We can now fit the model using the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;lavaan()&lt;/code&gt; function, being sure to
+include a couple of somewhat obscure flags and arguments.&lt;/p&gt;
+
+&lt;div class=&quot;language-r highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;mfit&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;-&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lavaan&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;model&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;reg&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;meas&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;covars&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pairs_dat&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;int.lv.free&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ordered&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;names&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pairs_dat&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)[&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;6&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;parameterization&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;theta&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;meanstructure&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;interpretting-the-fitted-model&quot;&gt;Interpretting the fitted model&lt;/h2&gt;
 
 &lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
 

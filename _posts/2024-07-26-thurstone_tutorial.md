@@ -1,4 +1,5 @@
 ---
+layout: single
 classes: wide
 title:  "A tutorial on analyzing ranking data"
 subtitle: "Casting Thurstone Case V models as SEMs"
@@ -50,12 +51,12 @@ representative samples of the populations of interest.
 
 | Trail maintenance | Trail construction | Invasive species management | Forest thinning | Group  |
 |------------------:|-------------------:|----------------------------:|----------------:|:-------|
+|                 3 |                  2 |                           1 |               4 | hikers |
 |                 3 |                  1 |                           2 |               4 | hikers |
-|                 2 |                  3 |                           1 |               4 | hikers |
-|                 3 |                  1 |                           4 |               2 | hikers |
+|                 2 |                  1 |                           3 |               4 | hikers |
 |                 3 |                  1 |                           2 |               4 | hikers |
-|                 1 |                  3 |                           2 |               4 | hikers |
-|                 3 |                  4 |                           2 |               1 | hikers |
+|                 1 |                  4 |                           3 |               2 | hikers |
+|                 1 |                  3 |                           4 |               2 | hikers |
 
 <span id="tab:eg-data"></span>Table 1: Example dataset. Note that a
 lower rank means higher priority or preference in this case.
@@ -189,7 +190,7 @@ distributions?
 
 <div class="figure" style="text-align: center">
 
-<img src="../assets/images/thurstone_blog/densities_final.png" alt="Conceptual figure of the Thurstone model following the example given in the text." width="60%" />
+<img src="/assets/images/thurstone_blog/densities_final.png" width="60%" />
 <p class="caption">
 <span id="fig:concept-fig"></span>Figure 1: Conceptual figure of the
 Thurstone model following the example given in the text.
@@ -275,23 +276,94 @@ depends on the spacing among the means (Figure
 <a href="#fig:concept-fig">1</a>) and the covariance structure. For the
 purposes of this post, I only discuss the model for which the utilities
 are assumed independent with equal variance such that the covariance
-matrix $$\boldsymbol \Sigma = \sigma^2{\bf I}_K$$, where $${\bf I}_K$$ is
+matrix $$\boldsymbol \Sigma = \sigma^2{\bf I}_K$$, where ${\bf I}_K$ is
 the $$K\times K$$ identity matrix. This is known as the *Thurstone Case
 V* model, and is the simplest (but most constrained case due to the
 constraints on the covariance matrix) {% cite thurstone1931 %}.
 
 ## Thurstone models as SEMs
 
-Using the setup from above using the paired data to give information on
+Using the setup from above with the paired data to give information on
 the relative distances among the means of the utility distributions, we
 can represent Thurstone models as structural equation models (SEMs;
-Figure <a href="#fig:sem">2</a>).
+Figure <a href="#fig:sem">2</a>). The latent factors of the SEM are the
+utilities, which we assume to have a multivariate normal distribution
+with certain constraints. These utility distributions are measured by
+the pairwise differences in their means, of which there are
+$$K\choose 2$$ unique differences. If we let $$\bf A$$ be the design
+matrix mapping a vector of means $$\boldsymbol \mu$$ to their pairwise
+differences, we have the model
 
-``` r
-knitr::include_graphics(
-  here::here("assets/images/thurstone_blog/thurstone5_sem.png")
-)
-```
+$$
+{\boldsymbol \delta} = {\bf A} \boldsymbol\mu.
+$$
+
+As an example, the design matrix for our example with four items and
+their respective population utility distributions, the design matrix
+will take the form
+
+$$
+{\bf A} = \begin{bmatrix}
+1 & -1 & 0 & 0\\
+1 & 0 & -1 & 0\\
+1 & 0 & 0 & -1\\
+0 & 1 & -1 & 0\\
+0 & 1 & 0 & -1\\
+0 & 0 & 1 & -1\\
+\end{bmatrix}
+$$
+
+with each row representing a difference between two of the means in the
+vector of four. The vector of differences is then linked to the binary
+pairs data,
+
+$$
+y_{ij} = \begin{cases}
+1 & \text{if } u_i < u_j\\
+0 & \text{otherwise}
+\end{cases}
+$$
+
+through the [probit](https://en.wikipedia.org/wiki/Probit_model) link
+function. Specifically, if we let
+
+$$
+{\bf z} = {\bf D}({\bf d} - {\boldsymbol \delta})
+$$
+
+be the standardized vector of a set of realized differences, $$\bf d$$,
+with
+$${\bf D} = \text{diag}({\bf A}{\boldsymbol \Sigma}{\bf A}^\top)^{-1/2}$$
+as the diagonal matrix of the inverse standard deviations of the
+differences, then the pairs data are related to the latent means through
+what’s known as the *threshold relationship* {% cite
+maydeu-olivares_SEM_2005 %}. Specifically,
+
+$$
+y_{ij} = \begin{cases}
+1 & \text{if } z_{ij} \ge \tau_{ij}\\
+0 & \text{if } z_{ij} < \tau_{ij}\\
+\end{cases}
+$$
+
+where $${\boldsymbol \tau} = -{\bf DA}{\boldsymbol \mu}$$ is the vector
+of thresholds.
+
+As discussed above, the final component of formulating the Thurstone
+Case V model as a SEM is to impose the constraints necessary for
+identifiability. First, note that $$\bf A$$ is the factor loadings
+matrix which is completely known in this case. Second, we need to
+specify the variances and covariances of the latent factors (the
+utilities), which, for the Case V model, we assume equal variances and
+covariances equal to zero. Note that the exact value of the variances is
+arbitrary since we can always find means, $$\mu_1, \mu_2, \mu_1'$$ and
+$$\mu_2'$$ such that
+$$P(X_1 < X_2 | \mu_1, \mu_2, \sigma_1^2) = P(Y_1 < Y_2 | \mu_1', \mu_2', \sigma_2^2)$$
+for any specified $$\sigma_1^2$$ and $$\sigma_2^2$$ and
+$$X_1, X_2, Y_1, Y_2$$ mutually independent. We therefore usually set
+$$\sigma^2 = 1$$ for convenience. Finally, we need to fix one of the
+latent means to some arbitrary value. As mentioned above, we usually set
+$$\mu_K = 0$$, arbitrarily.
 
 <div class="figure">
 
@@ -301,13 +373,232 @@ knitr::include_graphics(
 model cast as a SEM. All path coefficients from the latent means to the
 differences \(d_{ij}\) are fixed at either 1 (black arrow) or -1, (red
 arrow). The exogenous variables, \(y_{ij}\) are the pairs data, taking
-the value 1 if item $$i$$ was ranked ahead of item $$j$$ and 0
+the value 1 if item \(i\) was ranked ahead of item \(j\) and 0
 otherwise. These exogenous variables are linked to the latent
-differences through the probit link function, denoted $$\Phi()$$. The
-$$z_{ij}$$’s are the standardized latent differences.
+differences through the probit link function, denoted \(\Phi()\). The
+\(z_{ij}\)’s are the standardized latent differences.
 </p>
 
 </div>
+
+# Fitting the model with `lavaan`
+
+Okay, now that the model description is out of the way, let’s finally
+learn how to fit this model in R! We will use the SEM software package
+`lavaan` for this, which is very flexible and has many convenient
+features. We will be using some infrequently used fitting options and
+arguments, which is part of what prompted me to create this post. It
+took me a while to figure out how to get `lavaan` to do what I wanted,
+so I thought this might be helpful to others out there with ranking
+data.
+
+## Preparing the data
+
+The first step to fitting this model is to prepare the data. For this,
+we need to first convert the ranking data into pairs data. To do this, I
+will use a custom function in a package I am developing called
+`thurStEM` (you can find the code
+[here](https://github.com/Dusty-Gannon/thurStEM) and download as a
+package using `devtools::install_github()`).
+
+``` r
+library(tidyverse)
+library(thurStEM)
+
+head(rank_dat)
+```
+
+    ##   trail_maintenance new_trails invasives thinning  group
+    ## 1                 3          2         1        4 hikers
+    ## 2                 3          1         2        4 hikers
+    ## 3                 2          1         3        4 hikers
+    ## 4                 3          1         2        4 hikers
+    ## 5                 1          4         3        2 hikers
+    ## 6                 1          3         4        2 hikers
+
+``` r
+# convert to pairs data
+pairs_dat <- ranks_as_pairs(rank_dat, cols = 1:4)
+
+head(pairs_dat)
+```
+
+    ##   trail_maintenance_before_new_trails trail_maintenance_before_invasives
+    ## 1                                   0                                  0
+    ## 2                                   0                                  0
+    ## 3                                   0                                  1
+    ## 4                                   0                                  0
+    ## 5                                   1                                  1
+    ## 6                                   1                                  1
+    ##   trail_maintenance_before_thinning new_trails_before_invasives
+    ## 1                                 1                           0
+    ## 2                                 1                           1
+    ## 3                                 1                           1
+    ## 4                                 1                           1
+    ## 5                                 1                           0
+    ## 6                                 1                           1
+    ##   new_trails_before_thinning invasives_before_thinning  group
+    ## 1                          1                         1 hikers
+    ## 2                          1                         1 hikers
+    ## 3                          1                         1 hikers
+    ## 4                          1                         1 hikers
+    ## 5                          0                         0 hikers
+    ## 6                          0                         0 hikers
+
+We can see how the function labels the new columns, which is meant to be
+clear and informative, but for the sake of easier typing later, I’m
+going to rename them.
+
+``` r
+pairs_dat <- pairs_dat %>% rename(
+  i1i2 = trail_maintenance_before_new_trails,
+  i1i3 = trail_maintenance_before_invasives,
+  i1i4 = trail_maintenance_before_thinning,
+  i2i3 = new_trails_before_invasives,
+  i2i4 = new_trails_before_thinning,
+  i3i4 = invasives_before_thinning
+)
+```
+
+The next step is to convert the explanatory variable, `group`, into
+something `lavaan` can work with, which is just converting the factor
+into a matrix of indicator variables indicating if respondent $$i$$
+belongs to group $$g$$. We will bind these indicator variables to the
+pairs data for use with `lavaan`.
+
+``` r
+# create the dummy variables
+X <- model.matrix(~ group, data = pairs_dat)
+head(X)
+```
+
+    ##   (Intercept) grouphunters groupmtbikers
+    ## 1           1            0             0
+    ## 2           1            0             0
+    ## 3           1            0             0
+    ## 4           1            0             0
+    ## 5           1            0             0
+    ## 6           1            0             0
+
+``` r
+# bind the second and third columns to the data
+pairs_dat <- pairs_dat %>%
+  mutate(
+    grp_hunt = X[, "grouphunters"],
+    grp_bike = X[, "groupmtbikers"]
+  )
+```
+
+Note that we did not bind the first column of the model matrix to the
+data. The first column is the intercept, which represents the mean
+latent vector $$\mu$$ when in the reference group of hikers. Including
+this in our data and model definition would lead to identifiability
+issues.
+
+The final thing we need to do to prepare the data is ensure that the
+columns defining the binary pairs data are of class `"ordered"` so that
+`lavaan` treats them as categorical and not numeric.
+
+``` r
+pairs_dat <- pairs_dat %>%
+  mutate(
+    across(i1i2:i3i4, .fns = as.ordered)
+  )
+```
+
+## Fitting the model
+
+We can now create the model definition using [`lavaan`
+syntax](https://lavaan.ugent.be/tutorial/syntax1.html). As a first step,
+let’s define the *regression* component in which the latent means are
+modeled as a function of the grouping variable, `group`. The syntax here
+is likely familiar to R users.
+
+``` r
+library(lavaan)
+```
+
+    ## This is lavaan 0.6-18
+    ## lavaan is FREE software! Please report any bugs.
+
+``` r
+# notice the single quotes for all the model components
+reg <- '
+  item_1 ~ 1 + grp_hunt + grp_bike
+  item_2 ~ 1 + grp_hunt + grp_bike
+  item_3 ~ 1 + grp_hunt + grp_bike
+  item_4 ~ 0 * 1
+'
+```
+
+The `grp_hunt` and `grp_bike` variables are the indicator variables we
+created above while we can name the latent variables whatever we like. I
+chose `item_k` to keep the terminology consistent. Notice that we
+include the `~ 1` terminology to specify the intercept, and premultiply
+it by 0 in the last line to constrain the mean of the utility
+distribution of `item_4` to zero. Note this constraint applies
+regardless of the group since the group definitions should just affect
+the spacing among the latent means.
+
+The next step is to define the *indicator* section (not to be confused
+with indicator variables), which specifies how the latent variables are
+measured. In our case, they are measured by the pairs data with specific
+constraints on the factor loadings. Constraints can be placed on nearly
+any `lavaan` model component by *premultiplying* it by the constraint.
+Here, we set the constraints on the factor loadings using based on the
+design matrix $$\bf A$$.
+
+``` r
+meas <- '
+  item_1 =~ 1 * i1i2 + 1 * i1i3 + 1 * i1i4
+  item_2 =~ -1 * i1i2 + 1 * i2i3 + 1 * i2i4
+  item_3 =~ -1 * i1i3 + -1 * i2i3 + 1 * i3i4
+  item_4 =~ -1 * i1i4 + -1 * i2i4 + -1 * i3i4
+'
+```
+
+This model block defines the factor loadings based on the columns of
+$$\bf A$$, and reflects the structure of Figure
+<a href="#fig:sem">2</a>. Omitting the loadings with constraints to zero
+as I have done here is the same as explicitely constraining them to zero
+in the model definition.
+
+Finally, we can place the necessary constraints on the (co)variances,
+and fit the model. This is done using the `~~` syntax in `lavaan`.
+
+``` r
+covars <- '
+  # constrain variances to one
+  item_1 ~~ 1 * item_1
+  item_2 ~~ 1 * item_2
+  item_3 ~~ 1 * item_3
+  item_4 ~~ 0 * item_4
+  
+  # now constrain the covariances to zero
+  item_1 ~~ 0 * item_2
+  item_1 ~~ 0 * item_3
+  item_1 ~~ 0 * item_4
+  item_2 ~~ 0 * item_3
+  item_2 ~~ 0 * item_4
+  item_3 ~~ 0 * item_4
+'
+```
+
+We can now fit the model using the `lavaan()` function, being sure to
+include a couple of somewhat obscure flags and arguments.
+
+``` r
+mfit <- lavaan(
+  model = c(reg, meas, covars),
+  data = pairs_dat,
+  int.lv.free = T,
+  ordered = names(pairs_dat)[1:6],
+  parameterization = "theta",
+  meanstructure = T
+)
+```
+
+## Interpretting the fitted model
 
 ## References
 
