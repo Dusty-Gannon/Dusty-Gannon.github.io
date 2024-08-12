@@ -7,8 +7,17 @@ date:   "July 2024"
 categories: "Common issues"
 usemathjax: true
 toc: true
+output:
+  bookdown::github_document2:
+    number_sections: false
+    preserve_yaml: true
 ---
 
+A tutorial on analyzing ranking data
+================
+July 2024
+
+true
 
 # Ranking data
 
@@ -53,10 +62,10 @@ representative samples of the populations of interest.
 |------------------:|-------------------:|----------------------------:|----------------:|:-------|
 |                 3 |                  2 |                           1 |               4 | hikers |
 |                 3 |                  1 |                           2 |               4 | hikers |
-|                 2 |                  1 |                           3 |               4 | hikers |
 |                 3 |                  1 |                           2 |               4 | hikers |
-|                 1 |                  4 |                           3 |               2 | hikers |
-|                 1 |                  3 |                           4 |               2 | hikers |
+|                 3 |                  2 |                           1 |               4 | hikers |
+|                 1 |                  2 |                           3 |               4 | hikers |
+|                 3 |                  2 |                           1 |               4 | hikers |
 
 <span id="tab:eg-data"></span>Table 1: Example dataset. Note that a
 lower rank means higher priority or preference in this case.
@@ -190,7 +199,7 @@ distributions?
 
 <div class="figure" style="text-align: center">
 
-<img src="/assets/images/thurstone_blog/densities_final.png" width="60%" />
+<img src="../assets/images/thurstone_blog/densities_final.png" alt="Conceptual figure of the Thurstone model following the example given in the text." width="60%" />
 <p class="caption">
 <span id="fig:concept-fig"></span>Figure 1: Conceptual figure of the
 Thurstone model following the example given in the text.
@@ -367,16 +376,16 @@ $$\mu_K = 0$$, arbitrarily.
 
 <div class="figure">
 
-<img src="/assets/images/thurstone_blog/thurstone5_sem.png" width="100%" />
+<img src="../assets/images/thurstone_blog/thurstone5_sem.png" alt="Path diagram of the Thurstone case V model cast as a SEM. All path coefficients from the latent means to the differences $$d_{ij}$$ are fixed at either 1 (black arrow) or -1, (red arrow). The exogenous variables, $$y_{ij}$$ are the pairs data, taking the value 1 if item $$i$$ was ranked ahead of item $$j$$ and 0 otherwise. These exogenous variables are linked to the latent differences through the probit link function, denoted $$\Phi()$$. The $$z_{ij}$$'s are the standardized latent differences." width="100%" />
 <p class="caption">
 <span id="fig:sem"></span>Figure 2: Path diagram of the Thurstone case V
 model cast as a SEM. All path coefficients from the latent means to the
-differences \(d_{ij}\) are fixed at either 1 (black arrow) or -1, (red
-arrow). The exogenous variables, \(y_{ij}\) are the pairs data, taking
-the value 1 if item \(i\) was ranked ahead of item \(j\) and 0
+differences $$d_{ij}$$ are fixed at either 1 (black arrow) or -1, (red
+arrow). The exogenous variables, $$y_{ij}$$ are the pairs data, taking
+the value 1 if item $$i$$ was ranked ahead of item $$j$$ and 0
 otherwise. These exogenous variables are linked to the latent
-differences through the probit link function, denoted \(\Phi()\). The
-\(z_{ij}\)’s are the standardized latent differences.
+differences through the probit link function, denoted $$\Phi()$$. The
+$$z_{ij}$$’s are the standardized latent differences.
 </p>
 
 </div>
@@ -411,10 +420,10 @@ head(rank_dat)
     ##   trail_maintenance new_trails invasives thinning  group
     ## 1                 3          2         1        4 hikers
     ## 2                 3          1         2        4 hikers
-    ## 3                 2          1         3        4 hikers
-    ## 4                 3          1         2        4 hikers
-    ## 5                 1          4         3        2 hikers
-    ## 6                 1          3         4        2 hikers
+    ## 3                 3          1         2        4 hikers
+    ## 4                 3          2         1        4 hikers
+    ## 5                 1          2         3        4 hikers
+    ## 6                 3          2         1        4 hikers
 
 ``` r
 # convert to pairs data
@@ -426,24 +435,24 @@ head(pairs_dat)
     ##   trail_maintenance_before_new_trails trail_maintenance_before_invasives
     ## 1                                   0                                  0
     ## 2                                   0                                  0
-    ## 3                                   0                                  1
+    ## 3                                   0                                  0
     ## 4                                   0                                  0
     ## 5                                   1                                  1
-    ## 6                                   1                                  1
+    ## 6                                   0                                  0
     ##   trail_maintenance_before_thinning new_trails_before_invasives
     ## 1                                 1                           0
     ## 2                                 1                           1
     ## 3                                 1                           1
-    ## 4                                 1                           1
-    ## 5                                 1                           0
-    ## 6                                 1                           1
+    ## 4                                 1                           0
+    ## 5                                 1                           1
+    ## 6                                 1                           0
     ##   new_trails_before_thinning invasives_before_thinning  group
     ## 1                          1                         1 hikers
     ## 2                          1                         1 hikers
     ## 3                          1                         1 hikers
     ## 4                          1                         1 hikers
-    ## 5                          0                         0 hikers
-    ## 6                          0                         0 hikers
+    ## 5                          1                         1 hikers
+    ## 6                          1                         1 hikers
 
 We can see how the function labels the new columns, which is meant to be
 clear and informative, but for the sake of easier typing later, I’m
@@ -491,9 +500,9 @@ pairs_dat <- pairs_dat %>%
 
 Note that we did not bind the first column of the model matrix to the
 data. The first column is the intercept, which represents the mean
-latent vector $$\mu$$ when in the reference group of hikers. Including
-this in our data and model definition would lead to identifiability
-issues.
+latent vector $$\mu$$ when in the reference group (hikers in this case).
+Including this in our data and model definition would lead to
+identifiability issues.
 
 The final thing we need to do to prepare the data is ensure that the
 columns defining the binary pairs data are of class `"ordered"` so that
@@ -522,7 +531,7 @@ library(lavaan)
     ## lavaan is FREE software! Please report any bugs.
 
 ``` r
-# notice the single quotes for all the model components
+# notice the single quotes around all the model components
 reg <- '
   item_1 ~ 1 + grp_hunt + grp_bike
   item_2 ~ 1 + grp_hunt + grp_bike
@@ -534,9 +543,9 @@ reg <- '
 The `grp_hunt` and `grp_bike` variables are the indicator variables we
 created above while we can name the latent variables whatever we like. I
 chose `item_k` to keep the terminology consistent. Notice that we
-include the `~ 1` terminology to specify the intercept, and premultiply
-it by 0 in the last line to constrain the mean of the utility
-distribution of `item_4` to zero. Note this constraint applies
+include the `~ 1` terminology to specify the intercept, and
+*premultiply* it by 0 in the last line to constrain the mean of the
+utility distribution of `item_4` to zero. Note this constraint applies
 regardless of the group since the group definitions should just affect
 the spacing among the latent means.
 
@@ -544,9 +553,9 @@ The next step is to define the *indicator* section (not to be confused
 with indicator variables), which specifies how the latent variables are
 measured. In our case, they are measured by the pairs data with specific
 constraints on the factor loadings. Constraints can be placed on nearly
-any `lavaan` model component by *premultiplying* it by the constraint.
-Here, we set the constraints on the factor loadings using based on the
-design matrix $$\bf A$$.
+any `lavaan` model component by premultiplying it by the constraint.
+Here, we set the constraints on the factor loadings based on the design
+matrix $$\bf A$$.
 
 ``` r
 meas <- '
@@ -560,7 +569,7 @@ meas <- '
 This model block defines the factor loadings based on the columns of
 $$\bf A$$, and reflects the structure of Figure
 <a href="#fig:sem">2</a>. Omitting the loadings with constraints to zero
-as I have done here is the same as explicitely constraining them to zero
+as I have done here is the same as explicitly constraining them to zero
 in the model definition.
 
 Finally, we can place the necessary constraints on the (co)variances,
@@ -569,6 +578,7 @@ and fit the model. This is done using the `~~` syntax in `lavaan`.
 ``` r
 covars <- '
   # constrain variances to one
+  # the final item has zero variance since it is fixed to zero
   item_1 ~~ 1 * item_1
   item_2 ~~ 1 * item_2
   item_3 ~~ 1 * item_3
@@ -585,7 +595,11 @@ covars <- '
 ```
 
 We can now fit the model using the `lavaan()` function, being sure to
-include a couple of somewhat obscure flags and arguments.
+include a couple of somewhat obscure flags and arguments. Specifically,
+we need to use the `ordered` argument to tell `lavaan` that the pairs
+data are ordinal variables and not numeric, and we need to specify that
+we want to estimate the mean structure of the latent variables by
+setting the `meanstructure` argument to `TRUE`.
 
 ``` r
 mfit <- lavaan(

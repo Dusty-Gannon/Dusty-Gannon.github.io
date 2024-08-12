@@ -11,27 +11,9 @@ def replace_dollar_signs_in_caption(caption_text):
     return re.sub(r'\$\$', replacer, caption_text)
 
 def replace_dollar_signs_outside_captions(text):
-    # Replace $$ alternately with $ if preceded by a space
-    def replacer(match):
-        if replacer.counter % 2 == 0 and replacer.space_preceded:
-            replacer.counter += 1
-            replacer.space_preceded = False
-            return '$'
-        replacer.counter += 1
-        return '$'
-    replacer.counter = -1
-    replacer.space_preceded = False
-
-    def space_checker(match):
-        if match.group(1) == " ":
-            replacer.space_preceded = True
-        return match.group(0) + replacer(match)
-
-    # Avoid replacing if $$ is preceded by two newlines
-    pattern = re.compile(r'(?<!\n\n)(\s?)\$\$', re.DOTALL)
-    text = pattern.sub(space_checker, text)
-
-    return text
+    # Replace $$ with $ unless preceded or followed by two newlines
+    pattern = re.compile(r'(?<!\n\n)\$\$(?!\n\n)', re.DOTALL)
+    return pattern.sub('$', text)
 
 def process_file(input_path, output_path, single_dollar=False):
     with open(input_path, 'r') as file:
@@ -63,5 +45,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     process_file(args.input_path, args.output_path, single_dollar=args.single_dollar)
+
 
 

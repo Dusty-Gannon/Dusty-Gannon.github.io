@@ -27,18 +27,22 @@ Ranking data generally come as a set of integers in response to a list of items 
 ```{r echo=FALSE, message=FALSE}
 # create some data
 # some ranking data from different groups
+
+set.seed(2563)
 mus <- list(
-  hikers = c(0, 0.5, -0.5, 2),
-  mtbikers = c(0, -2, 1, 0.5),
-  hunters = c(0, -0.5, -1, -1.5)
+  hikers = c(-4, -2, -1, 0)
+  #mtbikers = c(0.5, -2, 1, 0),
+  #hunters = c(-1.5, -0.5, -1, 0)
 )
+
+
 
 # create the rank data
 ranks <- lapply(
   mus,
   FUN = function(mu){
     sapply(
-    1:50,
+    1:1000,
     function(x){
       s <- rnorm(length(mu), mean = mu)
       return(order(s))
@@ -52,7 +56,7 @@ rank_dat <- Reduce(cbind, ranks) |> t() |> as.data.frame()
 # add column names and a group label
 rank_dat <- dplyr::mutate(
   rank_dat,
-  group = rep(names(ranks), each = 50)
+  group = rep(names(ranks), each = 100)
 )
 names(rank_dat)[1:4] <- c("trail_maintenance", "new_trails", "invasives", "thinning")
 
@@ -290,7 +294,7 @@ pairs_dat <- pairs_dat %>%
 
 ```
 
-Note that we did not bind the first column of the model matrix to the data. The first column is the intercept, which represents the mean latent vector $$\mu$$ when in the reference group of hikers. Including this in our data and model definition would lead to identifiability issues.
+Note that we did not bind the first column of the model matrix to the data. The first column is the intercept, which represents the mean latent vector $$\mu$$ when in the reference group (hikers in this case). Including this in our data and model definition would lead to identifiability issues.
 
 The final thing we need to do to prepare the data is ensure that the columns defining the binary pairs data are of class `"ordered"` so that `lavaan` treats them as categorical and not numeric.
 
@@ -308,18 +312,31 @@ We can now create the model definition using [`lavaan` syntax](https://lavaan.ug
 
 ```{r}
 library(lavaan)
-# notice the single quotes for all the model components
+# notice the single quotes around all the model components
 reg <- '
   item_1 ~ 1 + grp_hunt + grp_bike
   item_2 ~ 1 + grp_hunt + grp_bike
   item_3 ~ 1 + grp_hunt + grp_bike
   item_4 ~ 0 * 1
 '
+
+reg <- '
+  item_1 ~ mu_1 * 1 
+  item_2 ~ mu_2 * 1
+  item_3 ~ mu_3 * 1
+  item_4 ~ 0 * 1 + mu_4 * 1
+  i1i2 ~ delta_12 * 1
+  i1i3 ~ delta_13 * 1
+  i1i4 ~ delta_14 * 1
+  i2i3 ~ delta_23 * 1
+  i2i4 ~ delta_24 * 1
+  i3i4 ~ delta_34 * 1
+'
 ```
 
-The `grp_hunt` and `grp_bike` variables are the indicator variables we created above while we can name the latent variables whatever we like. I chose `item_k` to keep the terminology consistent. Notice that we include the `~ 1` terminology to specify the intercept, and premultiply it by 0 in the last line to constrain the mean of the utility distribution of `item_4` to zero. Note this constraint applies regardless of the group since the group definitions should just affect the spacing among the latent means.
+The `grp_hunt` and `grp_bike` variables are the indicator variables we created above while we can name the latent variables whatever we like. I chose `item_k` to keep the terminology consistent. Notice that we include the `~ 1` terminology to specify the intercept, and *premultiply* it by 0 in the last line to constrain the mean of the utility distribution of `item_4` to zero. Note this constraint applies regardless of the group since the group definitions should just affect the spacing among the latent means.
 
-The next step is to define the *indicator* section (not to be confused with indicator variables), which specifies how the latent variables are measured. In our case, they are measured by the pairs data with specific constraints on the factor loadings. Constraints can be placed on nearly any `lavaan` model component by *premultiplying* it by the constraint. Here, we set the constraints on the factor loadings using based on the design matrix $$\bf A$$.
+The next step is to define the *indicator* section (not to be confused with indicator variables), which specifies how the latent variables are measured. In our case, they are measured by the pairs data with specific constraints on the factor loadings. Constraints can be placed on nearly any `lavaan` model component by premultiplying it by the constraint. Here, we set the constraints on the factor loadings based on the design matrix $$\bf A$$.
 
 ```{r}
 meas <- '
@@ -330,7 +347,7 @@ meas <- '
 '
 ```
 
-This model block defines the factor loadings based on the columns of $$\bf A$$, and reflects the structure of Figure \@ref(fig:sem). Omitting the loadings with constraints to zero as I have done here is the same as explicitely constraining them to zero in the model definition.
+This model block defines the factor loadings based on the columns of $$\bf A$$, and reflects the structure of Figure \@ref(fig:sem). Omitting the loadings with constraints to zero as I have done here is the same as explicitly constraining them to zero in the model definition.
 
 Finally, we can place the necessary constraints on the (co)variances, and fit the model. This is done using the `~~` syntax in `lavaan`.
 
@@ -340,32 +357,72 @@ covars <- '
   item_1 ~~ 1 * item_1
   item_2 ~~ 1 * item_2
   item_3 ~~ 1 * item_3
-  item_4 ~~ 0 * item_4
+  item_4 ~~ 1 * item_4
   
-  # now constrain the covariances to zero
-  item_1 ~~ 0 * item_2
-  item_1 ~~ 0 * item_3
-  item_1 ~~ 0 * item_4
-  item_2 ~~ 0 * item_3
-  item_2 ~~ 0 * item_4
-  item_3 ~~ 0 * item_4
+  # residual varainces constrained
+  i1i2 ~~ 0 * i1i2
+  i1i3 ~~ 0 * i1i3
+  i1i4 ~~ 0 * i1i4
+  i2i3 ~~ 0 * i2i3
+  i2i4 ~~ 0 * i2i4
+  i3i4 ~~ 0 * i3i4
 '
 ```
 
-We can now fit the model using the `lavaan()` function, being sure to include a couple of somewhat obscure flags and arguments.
+```{r}
+# equality constraints
+eq_constr <- '
+  delta_12 == mu_1 - mu_2
+  delta_13 == mu_1 - mu_3
+  delta_14 == mu_1 - mu_4
+  delta_23 == mu_2 - mu_3
+  delta_24 == mu_2 - mu_4
+  delta_34 == mu_3 - mu_4
+'
+```
+
+
+We can now fit the model using the `lavaan()` function, being sure to include a couple of somewhat obscure flags and arguments. Specifically, we need to use the `ordered` argument to tell `lavaan` that the pairs data are ordinal variables and not numeric, and we need to specify that we want to estimate the mean structure of the latent variables by setting the `meanstructure` argument to `TRUE`.
 
 ```{r}
 mfit <- lavaan(
-  model = c(reg, meas, covars),
+  model = c(reg, meas, covars, eq_constr),
   data = pairs_dat,
-  int.lv.free = T,
   ordered = names(pairs_dat)[1:6],
   parameterization = "theta",
-  meanstructure = T
+  meanstructure = T,
+  orthogonal = T
 )
 ```
 
 ## Interpretting the fitted model
+
+The first thing to do after fitting a model, *before looking at the summary and inferential statistics*, is to make sure the data are compatible with the model. In other words, is your model reasonable? Unfortunately, the automated fit measures To do this, we can check the fit of the SEM using the `fitMeasures()` function from `lavaan`. To aid with the interpretation of the fit measures, we can also use the `effectsize` package \@ref(effectsize_pkg), which has some handy functions to help digest the many measures of fit that `lavaan` can provide.
+
+```{r}
+# check cfi
+fitMeasures(mfit, "cfi") |>
+  effectsize::interpret_rmsea(.076)
+```
+
+```{r}
+A <- rbind(
+  c(1, -1, 0, 0),
+  c(1, 0, -1, 0),
+  c(1, 0, 0, -1),
+  c(0, 1, -1, 0),
+  c(0, 1, 0, -1),
+  c(0, 0, 1, -1)
+)
+
+pars <- parameterEstimates(mfit)
+mu <- mus[[1]]
+
+t <- -diag(1/sqrt(2), 6) %*% A %*% mu
+
+1- pnorm(t, sd = sqrt(2))
+
+```
 
 
 
