@@ -23,10 +23,265 @@ Because of this *unequal spacing* issue, ordinal data get their own distinction 
 
 # Motivating example
 
-Assume we have distributed a short survey to two communities, one rural and one urban, and ask the respondents to rate three pictures of the same national park but taken at different locations in terms of how desirable each looks as a vacation destination. The first picture includes strictly "natural" scenery, the second includes some trails through meadows with some people hiking on them, and the last includes a gift shop and a welcome center with a stunning backdrop. The hypothesis is that people will gravitate towards the familiar, so those living in urban areas will rate the second two photos higher than the first since there is more evidence of human influence in them, while people from rural areas will rate the photos with less evidence of human influence higher.
+Assume we have distributed a short survey to 100 people from each of two communities, one rural and one urban, and asked the respondents to rate three pictures of the same national park but taken at different locations in terms of how desirable each looks as a vacation destination. The first picture includes strictly "natural" scenery, the second includes some trails through meadows with some people hiking on them, and the last includes a gift shop and a welcome center with a stunning backdrop. The hypothesis is that people will gravitate towards the familiar, so those living in urban areas will rate the second two photos higher than the first since there are more signs of familiar human development in them, while people from rural areas will rate the photos with less evidence of human influence higher.
 
-> Important caveat: I am not a social scientist and am just making this stuff up!
+> Important caveat: I am not a social scientist and am just making this stuff up! Forgive me if you are a social scientist and this is totally ridiculous `r emoji::emoji("slightly_smiling_face")`.
 
+
+```{r echo=FALSE, message=FALSE}
+
+library(tidyverse)
+set.seed(33009)
+
+n_comm <- 2
+n_people <- 100
+n_photos <- 3
+
+# define the data structure
+dat <- tibble(
+  photo = rep(c("natural", "trails", "buildings"), n_people * n_comm),
+  community = rep(c("rural", "urban"), each = n_people * n_photos),
+  person = rep(1:(n_people * n_comm), each = 3),
+  rating = NA
+)
+
+# define the cut points
+theta <- seq(-1, 2, by = 1)
+
+# define the latent means for each group-photo
+# combination
+mu <- list(
+  rural = c(2.5, 1.5, 0.5),
+  urban = c(0, 1.5, 1.3)
+)
+
+# define the correlation structure of errors within respondents
+Omega <- rbind(
+  c(1, 0.4, -0.5),
+  c(0.4, 1, -0.2),
+  c(-0.5, -0.2, 1)
+)
+
+# get latent observations
+lat_obs <- c(
+  lapply(
+    1:n_people,
+    function(i, mu, Omega){
+      mvtnorm::rmvnorm(1, mean = mu, Omega) |>
+        as.double()
+    },
+    mu = mu$rural, Omega = Omega
+  ),
+  lapply(
+    1:n_people,
+    function(i, mu, Omega){
+      mvtnorm::rmvnorm(1, mean = mu, Omega) |>
+        as.double()
+    },
+    mu = mu$urban, Omega = Omega
+  )
+) |> unlist()
+
+# now go through and add ratings
+for(i in 1:nrow(dat)){
+  k <- 1
+  while(k < 5){
+    if(lat_obs[i] < theta[k]){
+      dat$rating[i] <- k
+      k <- 6
+    }
+    k <- k + 1
+  }
+  if(k == 5){
+    dat$rating[i] <- k
+  }
+}
+
+```
+
+
+
+A summary of these fictitious data is shown in Table \@ref(tab:dat-summary).
+
+```{r echo=FALSE}
+dat %>% group_by(community, photo) %>%
+  summarise(
+    mean_rating = mean(rating),
+    n_respondents = length(unique(person)),
+    .groups = "drop"
+  ) %>%
+  kableExtra::kable(
+    format = "pipe",
+    digits = 2,
+    caption = "Data summary.",
+    label = "dat-summary"
+  )
+```
+
+# Ordered Probit Model
+
+With the ordered probit model, we imagine a normal distribution on a *latent* (i.e., unobserved) scale with mean equal to the linear predictor for observation $$i = 1,2,...,n$$,
+
+$$
+\eta_i = {\bf x}_i^\top \boldsymbol \beta
+$$
+
+and a variance of $$\sigma^2 = 1$$. So far, this is simply multiple regression, we just don't get to *see* this regression on the continuous scale. Instead, what we observe is a *filtered version* of the "true", continuous observation (e.g., how appealing a given photo is to the respondent on a continuous, unbounded scale). Specifically, we define a set of $$K-1$$ thresholds, $$\theta_1, ..., \theta_{K-1}$$, where $$K$$ is the number of categories in the ordinal variable (5 in our example). It is assumed that $$\theta_0 = -\infty$$ and $$\theta_K = \infty$$. The "filtering" process we imagine assumes that a realization from the normal distribution with mean $${\bf x}_i^\top \boldsymbol \beta$$ and variance of 1, denoted $$y_i^*$$, gets "binned" into the ordinal categories by the thresholds. So, for example, if $$\theta_{1} < y_i^* \le \theta_2$$, then the respondent would provide a rating of 2 stars. If instead $$\theta_4 < y_i^* < \infty = \theta_5$$, then the respondent would provide a rating of 5 stars.
+
+Given this model, we define the probability that a given person with covariates $${\bf x}_i$$ gives a rating of $$k$$ as 
+
+$$
+P(\theta_{k-1} < {\bf x_i}^\top \boldsymbol \beta + \epsilon_i < \theta_k)
+$$
+
+where $$\epsilon_1, \epsilon_2, ..., \epsilon_n \sim \mathcal{N}({\bf 0}, \Omega)$$ and $$\Omega$$ is an $$n\times n$$ correlation matrix (it's a correlation matrix rather than a covariance matrix since we assume the errors have variance of 1). Given the data, we jointly estimate the parameters $$(\boldsymbol \beta, \boldsymbol \theta, \boldsymbol \Omega)$$, though it is most often assumed that the errors are independent such that $$\Omega = I_n$$.
+
+## Fitting the model using `brms`
+
+While there are a few R packages out there than can estimate ordered probit models, `brms` (i.e., Bayesian Regression Models using Stan) is the most flexible. Furthermore, it uses syntax to define models that will be familiar to many R users and it is possible to use the posterior predictions to check model fit. Here is an example using the fictitious data described in Section \@ref(motivating-example).
+
+```{r message=FALSE}
+library(brms)
+library(tidyverse)
+
+# ensure our variables are of the correct class
+dat <- dat %>% mutate(
+  photo = factor(
+    photo,
+    levels = c("natural", "trails", "buildings")
+  ),
+  community = factor(community),
+  person = factor(person),
+  rating = ordered(rating)
+)
+
+# fitting the model
+mfit_init <- brm(
+  rating ~ photo * community + (1 | person),
+  family = cumulative(link = "probit"),
+  data = dat,
+  cores = 4
+)
+
+```
+
+Generally, you don't want to make a habbit of looking at the summary right after fitting a model, but rather check the assumptions first. However, I'm going to break that rule this time to point out the model components and parameters.
+
+```{r}
+summary(mfit_init)
+```
+
+The first thing to note is that the `Rhat` column of the summary indicates we had good chain convergence for all these parameters. The second thing I want to point out is how `brms` provides four intercept terms but no thresholds. This is because we can reparameterize the model described above. Specifically,
+
+$$
+\begin{aligned}
+  P(\theta_{k-1} < Y_i \le \theta_k) &= P(Y_i \le \theta_k) - P(Y_i < \theta_{k-1})\\
+  &= P(\beta_0 + x_i\beta_1 + \epsilon_i \le \theta_k) - P(\beta_0 + x_i\beta_1 + \epsilon_i < \theta_{k-1})\\
+  &= P(\beta_0  - \theta_k + x_i\beta_1 + \epsilon_i \le 0) - P(\beta_0 - \theta_{k-1} + x_i\beta_1 + \epsilon_i < 0)\\
+  &= P(\alpha_k + x_i\beta_1 + \epsilon_i \le 0) - P(\alpha_{k-1} + x_i\beta_1 + \epsilon_i < 0)\\
+  &= \Phi(\alpha_k + x_i\beta_1 + \epsilon_i) - \Phi(\alpha_{k-1} + x_i\beta_1 + \epsilon_i)
+\end{aligned}
+$$
+
+where $$\alpha_k$$ is the $$k^\text{th}$$ intercept provided by `brms` and $$\Phi()$$ is the CDF of a standard normal distribution (i.e., the inverse probit function). Let's run through an example using our data and the fitted model. Specifically, let's estimate the probability that a respondent from a the rural community rate the "natural" photo with a 5 for "very appealing". 
+
+```{r}
+# estimate from data
+ratings_rur_p1 <- dat %>% 
+  filter(community == "rural" & photo == "natural") %>%
+  pull(rating) %>% 
+  as.numeric() 
+mean(ratings_rur_p1 == 5)
+
+# estimate from the model
+pnorm(Inf) - pnorm(-0.40)
+```
+
+To get the model-based estimate, I recognized that the condition of rural with the "natural" photo was the reference condition, so we simply needed to use the `Intercept` estimates from the model to derive the probability estimate. Let's do another where we have to combine some terms to get the estimate. For example, the probability that a person from the urban community with rate the "trails" photo with a 4. 
+
+In a standard linear model that uses "dummy coding" like this (the standard in R), we would estimate the marginal mean of the urban - "trails" photo group by adding the intercept estimate, the estimate for the `phototrails` variable, and the estimate for the interaction term `phototrails:communityurban` together. Here, we have multiple "intercepts", so we need to add the `phototrails` and `phototrails:communityurban` estimates to *each* of the intercepts we are interested in. In this case, we need intercepts 3 and 4 to estimate the probability of interest.
+
+```{r}
+# estimate from data
+ratings_urb_p2 <- dat %>% 
+  filter(community == "urban" & photo == "trails") %>%
+  pull(rating) %>% 
+  as.numeric() 
+mean(ratings_urb_p2 == 4)
+
+# estimate from the model
+pnorm(-0.40 + -1.05 + 2.46) -
+  pnorm(-1.43 + -1.05 + 2.46)
+```
+
+Again, these are pretty close, indicating that we did our math correctly and have a reasonably good fit to the data. 
+
+## Checking model fit
+
+In Bayesian statistics, one way of checking model fit is by using posterior predictive checks. Essentially, we simulate "new data" from the posterior predictive distribution $$p(\tilde y | {\bf y})$$, where $$\tilde y$$ is a new, unobserved data point and $$\bf y$$ is the vector of observed data. Then, we ask, *how similar are our data to the simulated data*? If the model fits well, the observed data will be somewhere within the range of simulated data. If not, the observed data may be entirely outside the realm of anything the model would predict. To create some nice diagnostics, we can use the `DHARMa` package.
+
+```{r}
+library(DHARMa)
+
+# posterior predictions
+ppreds <- posterior_predict(mfit_init)
+
+resids <- createDHARMa(
+  simulatedResponse = t(ppreds),
+  observedResponse = as.numeric(dat$rating),
+  integerResponse = T,
+  fittedPredictedResponse = apply(ppreds, 2, mean)
+)
+
+plot(resids)
+```
+
+These diagnostic plots look pretty good (as they should since I generated the data using an ordered probit model). If there were issues, such as *overdispersion*, `DHARMa` would let you know with a lot of scary looking red text. 
+
+## Bayesian inference
+
+While converting back to the probability scale using the thresholds (intercepts) is a bit tricky, we actually don't really need them for some types of inference. In fact, we can still estimate things like the probability that someone from the rural community rates the "natural" picture higher than someone from the urban community, since this is based on the linear predictor and doesn't require the thresholds. Furthmore, `emmeans` can make this inference pretty easy on us. To do this, we need to get draws from the posterior distribution of the means of interest, then compute how often one is larger than the other. Here is an example.
+
+```{r}
+post_draws <- as_draws_df(mfit_init, variable = "b", regex = T)
+names(post_draws)
+```
+The first line in the above code block will extract any parameter with "b" in it and add it as a column in a dataframe. This is useful since `brms` uses "b" as a prefix for the "fixed effects" in the model. We can now look at and create the posterior distributions of interest. In fact, this first example comparing the difference in ratings between rural and urban communities when shown the "natural" photo is captured by the `b_communityurban` parameter.
+
+```{r}
+ggplot(post_draws, aes(x = b_communityurban)) +
+  geom_density()
+```
+
+This provides the posterior density of the difference in means, rural-natural minus urban-natural. This suggests that there is a detectable difference between these two groups and that those from rural communities rate the "natural" photo higher, on average, than those from urban communities. The probability that someone from the rural community rate the "natural" photo higher than someone from the urban community is estimated to be
+
+```{r}
+mean(post_draws$b_communityurban > 0)
+```
+
+This is someone akin to a very small p-value for this contrast in frequentist statistics.
+
+As a more complicated example, consider question of whether there is a difference in the average rating for photos "trails" and "buildings" between the two communities. This is how we could address that question:
+
+```{r}
+post_q2 <- with(post_draws, {
+  rural_trails <- 0 + b_phototrails
+  rural_buildings <- 0 + b_photobuildings
+  urban_trails <- 0 + b_phototrails + b_communityurban + 
+    `b_phototrails:communityurban`
+  urban_buildings <- 0 + b_photobuildings + b_communityurban + 
+    `b_photobuildings:communityurban`
+  # now do the means and difference of means
+  0.5 * (rural_buildings + rural_trails) - 
+    0.5 * (urban_buildings + urban_trails)
+})
+
+mean(post_q2 < 0)
+```
+
+Thus, we estimate that the probability that the mean rating for photo "trails" and photo "buildings" for the rural community is less than the mean rating for the urban community is `r mean(post_q2 < 0)`. 
+
+> Note that I included the 0s in the above calculations because the Intercept term, which is the mean for the rural-natural group, is fixed at 0. 
 
 
 
