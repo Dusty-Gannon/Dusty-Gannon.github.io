@@ -48,7 +48,11 @@ Botany and Plant Pathology, OSU
 
  - **FES 524: Natural Resources Data Analysis**
  
- - **FES/FERM 405: Introduction to coding using R**
+ - **FES/FERM 505: Introduction to coding using R**
+ 
+    - Lab materials available at [https://cof-intro2r.github.io/intro2R-lab-notes/](https://cof-intro2r.github.io/intro2R-lab-notes/)
+    
+    - Template homework repositories available at [https://github.com/orgs/CoF-intro2R/repositories](https://github.com/orgs/CoF-intro2R/repositories)
  
 ### Past teaching assisstantships
 

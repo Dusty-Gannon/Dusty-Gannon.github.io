@@ -9,7 +9,7 @@ usemathjax: true
 
 ## Bayesian learning methods for time series modeling
 
-Long-term data collection on ecological systems can help to illuminate how a system evolves through time with both internal mechanisms (e.g., competition between species or predation) and in response to external perturbations (e.g., anthropogenic disturbance). Long-term ecological (LTE) data is also critically important for projecting future states of a system with climate change, landscape conversion, and management efforts. While the recognition of the utility of LTE data is widespread, we are still in early stages of processing and analyzing the accumulating data, and modeling techniques continue to evolve. For this project, we are interested in exploring the utility of Bayesian regularization and unsupervised learning techniques in the analysis of LTE data with objectives of unsupervised feature selection and forecasting.
+Long-term data collection on ecological systems can help to illuminate how a system evolves through time with both internal mechanisms (e.g., competition between species or predation) and in response to external perturbations (e.g., anthropogenic disturbance). Long-term ecological (LTE) data is also critically important for projecting future states of a system with climate change, landscape conversion, and management efforts. While the recognition of the utility of LTE data is widespread, we are still in early stages of processing and analyzing the accumulating data, and modeling techniques continue to evolve. For this project, we are interested in exploring the utility of Bayesian regularization and learning techniques in the analysis of LTE data with objectives of feature selection and forecasting.
 
 ### Feature selection
 
@@ -21,9 +21,11 @@ Time series analysis often begins with a series of steps to *detrend* and remove
 
 Regularization / parameter ‘shrinkage’, or adding constraints to the model fitting procedure such that some regions of parameter space are penalized and some are favored, can help to protect against model overfitting, or fitting the model too closely to the observed data such that out-of-sample predictions are poor. Most Bayesian learning techniques include strongly informative prior distributions that favor parameter values close to zero. This can result in parameter shrinkage that may improve model forecasts of future states in time series, especially if the length of the observed time series is short and the data are noisy, making overfitting more likely.
   
+Forecasting may also sometimes be of interest even when data on potential covariates or drivers is not available. In this case, we are exploring the potential for Bayesian sparse modeling approaches to be applied as Bayesian smoothers to Fourier basis vectors. That is, we perform a change of basis with the data vector to a basis constructed with sine and cosine functions of increasing frequencies and use Bayesian learning techniques to smooth out the noise but keep the general trends in the data. This provides the potential for useful forecasts since the basis vectors, due to their construction with basic trigonometric functions, can be projected into the future.
+  
 <figure>
-  <img src="/assets/images/figures/research/forecast_comparson_AR-p.png" style="height:1200px;width:400px">
-  <figcaption> Comparing forecasts when using different priors for regression coefficients and autoregressive parameters. Regularization with Gaussian and, even more so, Horseshoe priors, may improve forecasts.
+  <img src="/assets/images/figures/research/concept_fig_fourier.png" style="height:800px;width:1200px">
+  <figcaption> Conceptual figure of our methods to generate useful forecasts for a time series without the use of covariates.
   </figcaption>
 </figure>
   
@@ -39,7 +41,6 @@ Following these early developments and the recognition that the LASSO estimator 
 
   - within- and out-of-sample predictive performance of the fitted models using software defaults
   - Model selection accuracy (i.e., which elements of $$\boldsymbol \beta$$ are zero and which are not?).
-  - Degree of parameter shrinkage
 
 <small>$$^*$$To see how the geometry of the LASSO penalty can force strictly sparse parameter vectors (those in which some parameters are estimated at *exactly* zero), check out my [shiny app for this topic](https://dusty-gannon.shinyapps.io/Geometry-of-LASSO-and-Ridge-regression/).</small>
 
@@ -47,7 +48,7 @@ Following these early developments and the recognition that the LASSO estimator 
 
 The COVID-19 pandemic interrupted daily activities across the globe, including data collection (oh no!). In data-driven time series models, such as classical autoregressive models, missing data may be problematic because observations are both response and predictor. For example, assume observation $$Y_t$$ is missing (denoting the missing data with capital letters and observed with lower-case) in a dataset to which we want to fit an AR(1) model. Ignoring the missing observation is problematic because we may violate the assumption of equal spacing between time points. Specifically, we wouldn't want to fit the model $$y_{t+1} = \mu + \phi y_{t - 1} + \epsilon_{t + 1}$$ when really our model is $$y_{t + 1} = \mu + \phi Y_{t} + \epsilon_{t + 1}$$. Deleting all observations that involve the missing $$Y_t$$ is also problematic because we have to delete more than just time point $$t$$ as a response, but also $$t + 1$$ since we have no predictor for $$t + 1$$. With more than just one missing observation or an AR order of greater than 1, this widdles down a dataset rapidly.
 
-Along with others in the [Modelscape Consortium](https://microcollaborative.atlassian.net/wiki/spaces/MP/overview), I am exploring options for appropriately handling missing data in data-driven time series modeling for both Gaussian time series as well as time series of count data. We are comparing model fits to simulated data with different mechanisms for missingness (missing completely at random [MCAR], autocorrelated missingness that results in contiguous stretches of missing data, and missing not at random [MNAR] when extreme values are more likely to be missing) when using imputation techniques as well as model-based approaches such as Bayesian data augmentation and expectation maximization. 
+Along with others in the [Modelscape Consortium](https://microcollaborative.atlassian.net/wiki/spaces/MP/overview), I am reviewing options for appropriately handling missing data in data-driven time series modeling for both Gaussian time series as well as time series of count data. We are comparing model fits to simulated data with different mechanisms for missingness (missing completely at random [MCAR], autocorrelated missingness that results in contiguous stretches of missing data, and missing not at random [MNAR] when extreme values are more likely to be missing) when using imputation techniques as well as model-based approaches such as Bayesian data augmentation and expectation maximization. 
 
 <figure>
   <img src="/assets/images/figures/research/missing_eff_on_marginals.png">
