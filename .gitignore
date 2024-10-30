@@ -43,3 +43,6 @@ vignettes/*.pdf
 
 # Works in progress
 /_posts/May-2023-identifiability.md
+
+# local site builds
+/_site/*
