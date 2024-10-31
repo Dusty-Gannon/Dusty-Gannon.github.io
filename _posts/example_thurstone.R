@@ -2,11 +2,13 @@
 set.seed(5663)
 mu <- c(-3, -2, -1, 0)
 
+surveys <- 1000
+
 ranks <- sapply(
-  1:100,
+  1:surveys,
   function(x){
     s <- rnorm(length(mu), mean = mu)
-    return(order(s))
+    return(order(s, decreasing = T))
   }
 ) |> t()
 
@@ -38,11 +40,27 @@ colnames(pairs_dat) <- c("i1i2", "i1i3", "i1i4", "i2i3", "i2i4", "i3i4")
 pairs_dat <- as.data.frame(pairs_dat)
 
 
+A <- rbind(
+  c(1,-1,0,0),
+  c(1,0,-1,0),
+  c(1,0,0,-1),
+  c(0,1,-1,0),
+  c(0,1,0,-1),
+  c(0,0,1,-1)
+)
+
+mu_star <- A%*%mu 
+Sig_ystar <- A %*% t(A)
+D <- diag(Sig_ystar)^(-0.5) |> diag()
+P <- D %*% Sig_ystar %*% D
+
+thresh <- -D %*% mu_star
+
+colMeans(pairs_dat)
+1 - pnorm(thresh)
+
 # specify model components
 reg <- '
-  i1 ~ mu1 * 1
-  i2 ~ mu2 * 1
-  i3 ~ mu3 * 1
   i4 ~ 0 * 1 + mu4 * 1
   i1i2 ~ d12 * 1
   i1i3 ~ d13 * 1
@@ -51,6 +69,7 @@ reg <- '
   i2i4 ~ d24 * 1
   i3i4 ~ d34 * 1
 '
+
 # fix the factor loadings as pairwise differences
 meas <- '
   i1 =~ 1 * i1i2 + 1 * i1i3 + 1 * i1i4
@@ -60,32 +79,34 @@ meas <- '
 '
 
 covars <- '
-  # residual variances constrained
-  i1i2 ~~ 0 * i1i2
-  i1i3 ~~ 0 * i1i3
-  i1i4 ~~ 0 * i1i4
-  i2i3 ~~ 0 * i2i3
-  i2i4 ~~ 0 * i2i4
-  i3i4 ~~ 0 * i3i4
+  i1 ~~ 1 * i1
+  i2 ~~ 1 * i2
+  i3 ~~ 1 * i3
+  i4 ~~ 1 * i4
+  i1i2 ~~ 2 * i1i2
+  i1i3 ~~ 2 * i1i3
+  i1i4 ~~ 2 * i1i4
+  i2i3 ~~ 2 * i2i3
+  i2i4 ~~ 2 * i2i4
+  i3i4 ~~ 2 * i3i4
 '
 
-contr <- '
-  d12 == mu1 - mu2
-  d13 == mu1 - mu3
-  d14 == mu1 - mu4
-  d23 == mu2 - mu3
-  d24 == mu2 - mu4
-  d34 == mu3 - mu4
+derived <- '
+  mu1 := sqrt(2) * d14
+  mu2 := sqrt(2) * d24
+  mu3 := sqrt(2) * d34
 '
+
 
 # fit the model
+library(lavaan)
 mfit <- lavaan(
-  model = c(reg, meas, covars, contr),
+  model = c(reg, meas, covars, derived),
   data = pairs_dat,
   ordered = names(pairs_dat)[1:6],
   parameterization = "theta",
-  meanstructure = T,
+  meanstructure = TRUE,
   orthogonal = T,
   std.lv = T
 )
-
+summary(mfit)
