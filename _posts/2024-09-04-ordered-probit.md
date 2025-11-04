@@ -1,23 +1,8 @@
----
-layout: single
-classes: wide
-title:  "A tutorial on analyzing ordinal data"
-subtitle: "A GLM approach"
-date:   "September 2024"
-categories: "Common issues"
-usemathjax: true
-toc: true
-output:
-  bookdown::github_document2:
-    number_sections: false
-    preserve_yaml: true
----
 
 A tutorial on analyzing ordinal data
 ================
 September 2024
 
-true
 
 # Introduction
 
