@@ -1,3 +1,14 @@
+---
+layout: single
+classes: wide
+title:  "A tutorial on analyzing ordinal data"
+subtitle: "A GLM approach"
+date:   "September 2024"
+categories: "Common issues"
+usemathjax: true
+toc: true
+---
+
 
 A tutorial on analyzing ordinal data
 ================
@@ -323,7 +334,7 @@ plot(resids)
 
     ## DHARMa:testOutliers with type = binomial may have inflated Type I error rates for integer-valued distributions. To get a more exact result, it is recommended to re-run testOutliers with type = 'bootstrap'. See ?testOutliers for details
 
-![](2024-09-04-ordered-probit_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](../assets/images/2024-09-04-ordered-probit_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 These diagnostic plots look pretty good (as they should since I
 generated the data using an ordered probit model). If there were issues,
@@ -368,7 +379,7 @@ ggplot(post_draws, aes(x = b_communityurban)) +
   geom_density()
 ```
 
-![](2024-09-04-ordered-probit_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](../assets/images/2024-09-04-ordered-probit_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 This provides the posterior density of the difference in means,
 rural-natural minus urban-natural. This suggests that there is a
