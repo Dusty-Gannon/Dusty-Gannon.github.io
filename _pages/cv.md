@@ -5,6 +5,7 @@ classes: wide
 toc: true
 ---
 
+$$~$$
 
 ## Education
 
@@ -53,6 +54,10 @@ Botany and Plant Pathology, OSU
     - Lab materials available at [https://cof-intro2r.github.io/intro2R-lab-notes/](https://cof-intro2r.github.io/intro2R-lab-notes/)
     
     - Template homework repositories available at [https://github.com/orgs/CoF-intro2R/repositories](https://github.com/orgs/CoF-intro2R/repositories)
+    
+  - **FES 605: Dive into Deep Learning Reading Group**
+    
+    - We are working our way through Zhang et al. 2023, [*Dive into Deep Learning*](https://d2l.ai). 
  
 ### Past teaching assisstantships
 
@@ -66,6 +71,10 @@ Botany and Plant Pathology, OSU
 
 
 ## Select publications
+
+  - Cerullo, G., **Gannon, D.**, Bailey Guerrero, J. A., Conklin, E., Kohlberg, A. B., Nelson, K., Rivers, J. W., Valente, J. J., Yang, Z., & Betts, M. G. Spatially concentrating logging could mitigate climate-magnified fragmentation risks to a globally endangered bird. *Journal of Applied Ecology*, (2026), 63(2), [DOI: 10.1111/1365-2664.70317](https://doi.org/10.1111/1365-2664.70317)
+  
+  - Seyfried, G. S., Campbell, B. J., Giani, N., **Gannon, D. G.**, & O’Halloran, T. L. Different Mechanisms Underlie Plant-Mediated Methane Transport in a Tidal Salt Marsh Versus an Impounded Brackish Wetland. *Journal of Geophysical Research: Biogeosciences*, (2026), 131(3), [DOI: 10.1029/2025JG008987](https://doi.org/10.1029/2025JG008987)
 
   - Lowman, H. E., M. DeSiervo, R. O. Hall, J. P. Jahner, S. O. Jimoh, D. C. Laughlin, A. C. Patterson, C. Weiss-Lehman, C. C. Barbosa, K. L. Bell, J. R. Blaszczak, C. A. Buerkle, A. M. Carter, S. M. Collins, V. DeLeo, M. Dunkle, **D. Gannon**, ..., and L. G. Shoemaker. Collaborative consortia can boost postdoctoral workforce development. *Proceedings of the National Academy of Sciences* (2024) 121:e2401812121.
 
@@ -82,6 +91,7 @@ Botany and Plant Pathology, OSU
 
   - R (*fluent*)
   - STAN (*fluent*)
+  - Python (*competent*)
   - Unix/Linux (*competent*)
   - LaTeX (*competent*)
   - C++ (*competent*)
